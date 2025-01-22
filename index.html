@@ -43,8 +43,8 @@
         rotation="-90 0 0"
       ></a-entity>
 
-      <!-- Caméra + contrôles (au départ : libre) -->
-      <!-- cursor="rayOrigin: mouse" => permet de cliquer sur la batterie -->
+      <!-- Caméra + contrôles (libres) -->
+      <!-- cursor="rayOrigin: mouse" => pour cliquer sur la batterie -->
       <a-entity
         id="playerCam"
         camera
@@ -71,59 +71,40 @@
 
         let isSeated = false;
 
-        // -- CLIC SUR LA BATTERIE --
+        // Au clic sur la batterie
         drumEl.addEventListener("click", () => {
           if (isSeated) return;
           isSeated = true;
 
-          // 1) Désactiver WASD + look-controls pendant l’animation
+          // Désactiver WASD + look-controls pendant l'animation
           cameraEl.setAttribute("wasd-controls", "enabled", false);
           cameraEl.setAttribute("look-controls", "enabled", false);
 
-          // 2) Définir les animations (position + rotation)
-          //    startEvents => on les déclenche toutes les deux par un event "startMove"
+          // Animer la position
           cameraEl.setAttribute("animation__campos", {
             property: "position",
-            to: "0 1.4 -0.6", // Ajustez la position d'"assise" souhaitée
+            to: "0 1.4 -0.6", // Ajustez l'endroit où vous voulez placer la caméra
             dur: 1000,
             easing: "easeInOutQuad",
             startEvents: "startMove",
           });
 
+          // Animer la rotation (regarder vers Y=180)
           cameraEl.setAttribute("animation__camrot", {
             property: "rotation",
-            to: "0 180 0", // Ajustez l'angle pour "regarder" la batterie
+            to: "0 180 0",
             dur: 1000,
             easing: "easeInOutQuad",
             startEvents: "startMove",
           });
 
-          // 3) On émet "startMove" pour déclencher les deux animations
+          // Déclenche les animations
           cameraEl.emit("startMove");
 
-          // 4) Quand l'animation de rotation est terminée, on réinitialise look-controls
-          //    et on active le pointer lock (immersion).
-          cameraEl.addEventListener(
-            "animationcomplete__camrot",
-            (evt) => {
-              if (evt.detail.name === "animation__camrot") {
-                // Remet la rotation interne de look-controls à 0
-                cameraEl.components["look-controls"].pitchObject.rotation.x = 0;
-                cameraEl.components["look-controls"].yawObject.rotation.y = 0;
+          // (SUPPRIMÉ) Pas de réinit pitchObject / yawObject ici
+          // (SUPPRIMÉ) Pas d'event listener "animationcomplete__camrot" pour forcer la rotation interne
 
-                // Réactiver la rotation (pointer lock)
-                cameraEl.setAttribute("look-controls", "enabled", true);
-                cameraEl.setAttribute(
-                  "look-controls",
-                  "pointerLockEnabled",
-                  false
-                );
-              }
-            },
-            { once: true } // Ne le faire qu'une fois
-          );
-
-          // 5) Faire apparaître les baguettes (opacité 0 -> 1)
+          // Faire apparaître les baguettes (opacity 0 -> 1)
           sticksEl.setAttribute("animation__fadein", {
             property: "material.opacity",
             from: 0,
@@ -133,7 +114,7 @@
           });
         });
 
-        // -- APPUI SUR ESPACE => SE DÉSINSTALLER --
+        // Appui sur Espace => Se "désinstaller"
         document.body.addEventListener("keyup", (evt) => {
           if (evt.code === "Space" && isSeated) {
             isSeated = false;
@@ -146,12 +127,10 @@
             cameraEl.setAttribute("position", { x: 0, y: 2, z: 4 });
             cameraEl.setAttribute("rotation", { x: 0, y: 0, z: 0 });
 
-            // Réinitialiser look-controls (yaw/pitch)
-            cameraEl.components["look-controls"].pitchObject.rotation.x = 0;
-            cameraEl.components["look-controls"].yawObject.rotation.y = 0;
-
-            // Réactiver WASD et désactiver pointer lock
+            // Réactiver WASD
             cameraEl.setAttribute("wasd-controls", "enabled", true);
+
+            // Désactiver pointer lock (si vous l'aviez activé)
             cameraEl.setAttribute("look-controls", "pointerLockEnabled", false);
 
             // Faire disparaître les baguettes (opacity 1 -> 0)
