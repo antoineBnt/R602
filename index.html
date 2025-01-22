@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Caméra vers un point fixe</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  </head>
+  <body>
+    <a-scene>
+      <a-assets>
+        <!-- Votre modèle de batterie -->
+        <a-asset-item
+          id="batterieModel"
+          src="assets/batterie.glb"
+        ></a-asset-item>
+        <!-- Votre modèle de baguettes -->
+        <a-asset-item
+          id="baguettesModel"
+          src="assets/baguette.glb"
+        ></a-asset-item>
+      </a-assets>
+
+      <!-- Batterie (cliquable) -->
+      <a-entity
+        id="drum"
+        gltf-model="#batterieModel"
+        position="0 0.6 0"
+        class="clickable"
+      ></a-entity>
+
+      <!-- Baguettes, invisibles au départ -->
+      <a-entity
+        id="baguettes"
+        gltf-model="#baguettesModel"
+        material="opacity: 0"
+        position="0 1 0.5"
+      ></a-entity>
+
+      <!-- Sol -->
+      <a-entity
+        geometry="primitive: plane; width: 10; height: 10"
+        material="color: #999"
+        rotation="-90 0 0"
+      ></a-entity>
+
+      <!-- Caméra + contrôles (au départ : libre) -->
+      <!-- cursor="rayOrigin: mouse" => permet de cliquer sur la batterie -->
+      <a-entity
+        id="playerCam"
+        camera
+        cursor="rayOrigin: mouse"
+        position="0 2 4"
+        rotation="0 0 0"
+        wasd-controls
+        look-controls="pointerLockEnabled: false"
+      ></a-entity>
+
+      <!-- Lumières -->
+      <a-entity light="type: ambient; intensity: 0.5"></a-entity>
+      <a-entity
+        light="type: directional; intensity: 1"
+        position="2 4 2"
+      ></a-entity>
+    </a-scene>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const drumEl = document.getElementById("drum");
+        const cameraEl = document.getElementById("playerCam");
+        const sticksEl = document.getElementById("baguettes");
+
+        let isSeated = false;
+
+        // -- CLIC SUR LA BATTERIE --
+        drumEl.addEventListener("click", () => {
+          if (isSeated) return;
+          isSeated = true;
+
+          // 1) Désactiver WASD + look-controls pendant l’animation
+          cameraEl.setAttribute("wasd-controls", "enabled", false);
+          cameraEl.setAttribute("look-controls", "enabled", false);
+
+          // 2) Définir les animations (position + rotation)
+          //    startEvents => on les déclenche toutes les deux par un event "startMove"
+          cameraEl.setAttribute("animation__campos", {
+            property: "position",
+            to: "0 1.4 -0.6", // Ajustez la position d'"assise" souhaitée
+            dur: 1000,
+            easing: "easeInOutQuad",
+            startEvents: "startMove",
+          });
+
+          cameraEl.setAttribute("animation__camrot", {
+            property: "rotation",
+            to: "0 180 0", // Ajustez l'angle pour "regarder" la batterie
+            dur: 1000,
+            easing: "easeInOutQuad",
+            startEvents: "startMove",
+          });
+
+          // 3) On émet "startMove" pour déclencher les deux animations
+          cameraEl.emit("startMove");
+
+          // 4) Quand l'animation de rotation est terminée, on réinitialise look-controls
+          //    et on active le pointer lock (immersion).
+          cameraEl.addEventListener(
+            "animationcomplete__camrot",
+            (evt) => {
+              if (evt.detail.name === "animation__camrot") {
+                // Remet la rotation interne de look-controls à 0
+                cameraEl.components["look-controls"].pitchObject.rotation.x = 0;
+                cameraEl.components["look-controls"].yawObject.rotation.y = 0;
+
+                // Réactiver la rotation (pointer lock)
+                cameraEl.setAttribute("look-controls", "enabled", true);
+                cameraEl.setAttribute(
+                  "look-controls",
+                  "pointerLockEnabled",
+                  false
+                );
+              }
+            },
+            { once: true } // Ne le faire qu'une fois
+          );
+
+          // 5) Faire apparaître les baguettes (opacité 0 -> 1)
+          sticksEl.setAttribute("animation__fadein", {
+            property: "material.opacity",
+            from: 0,
+            to: 1,
+            dur: 1000,
+            easing: "easeInOutQuad",
+          });
+        });
+
+        // -- APPUI SUR ESPACE => SE DÉSINSTALLER --
+        document.body.addEventListener("keyup", (evt) => {
+          if (evt.code === "Space" && isSeated) {
+            isSeated = false;
+
+            // Retirer les animations en cours
+            cameraEl.removeAttribute("animation__campos");
+            cameraEl.removeAttribute("animation__camrot");
+
+            // Replacer la caméra à la position/rotation initiales
+            cameraEl.setAttribute("position", { x: 0, y: 2, z: 4 });
+            cameraEl.setAttribute("rotation", { x: 0, y: 0, z: 0 });
+
+            // Réinitialiser look-controls (yaw/pitch)
+            cameraEl.components["look-controls"].pitchObject.rotation.x = 0;
+            cameraEl.components["look-controls"].yawObject.rotation.y = 0;
+
+            // Réactiver WASD et désactiver pointer lock
+            cameraEl.setAttribute("wasd-controls", "enabled", true);
+            cameraEl.setAttribute("look-controls", "pointerLockEnabled", false);
+
+            // Faire disparaître les baguettes (opacity 1 -> 0)
+            sticksEl.setAttribute("animation__fadeout", {
+              property: "material.opacity",
+              from: 1,
+              to: 0,
+              dur: 600,
+              easing: "easeInOutQuad",
+            });
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
