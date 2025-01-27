@@ -2,7 +2,7 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <title>Caméra + A-Frame Extras Drag</title>
+    <title>Caméra + A-Frame Extras Drag (Quest Buttons)</title>
     <!-- A-Frame principal -->
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <!-- A-Frame Extras (pour dragndrop) -->
@@ -23,12 +23,11 @@
         ></a-asset-item>
       </a-assets>
 
-      <!-- Batterie (cliquable) -->
+      <!-- Batterie (optionnelle, on n'utilise plus le clic dessus) -->
       <a-entity
         id="drum"
         gltf-model="#batterieModel"
         position="0 0.6 0"
-        class="clickable"
       ></a-entity>
 
       <!-- Baguette gauche -->
@@ -63,17 +62,26 @@
       ></a-entity>
 
       <!-- Caméra + contrôles (libres au départ) -->
-      <!-- cursor="rayOrigin: mouse" => permet de cliquer sur la batterie et de "drag" -->
-      <!-- raycaster="objects: .clickable, .draggable" => on peut cliquer sur la batterie + baguettes -->
+      <!-- raycaster="objects: .draggable" => on peut "drag" les baguettes -->
       <a-entity
         id="playerCam"
         camera
-        cursor="rayOrigin: mouse"
-        raycaster="objects: .clickable, .draggable"
+        raycaster="objects: .draggable"
         position="0 2 4"
         rotation="0 0 0"
         wasd-controls
         look-controls="pointerLockEnabled: false"
+      ></a-entity>
+
+      <!-- Contrôleurs Quest (remplace le clic et barre espace) -->
+      <a-entity
+        id="leftHand"
+        oculus-touch-controls="hand: left; model: true"
+      ></a-entity>
+
+      <a-entity
+        id="rightHand"
+        oculus-touch-controls="hand: right; model: true"
       ></a-entity>
 
       <!-- Lumières -->
@@ -84,18 +92,26 @@
       ></a-entity>
     </a-scene>
 
-    <!-- Script d'animation / clic / opacité -->
+    <!-- Script d'animation / "s'asseoir" / "se relever" via manette -->
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        const drumEl = document.getElementById("drum");
         const cameraEl = document.getElementById("playerCam");
         const leftStickEl = document.getElementById("baguetteLeft");
         const rightStickEl = document.getElementById("baguetteRight");
+        const leftHandEl = document.getElementById("leftHand");
+        const rightHandEl = document.getElementById("rightHand");
 
         let isSeated = false;
 
-        // -- Clic sur la batterie --
-        drumEl.addEventListener("click", () => {
+        /*
+          Idée : on "toggle" s'asseoir / se relever
+          quand on appuie sur un bouton (ex: trigger) 
+          d'une des manettes Quest.
+          (Vous pouvez changer la condition detail.id === 'trigger'
+           par 'grip', 'thumbstick', etc. selon vos préférences)
+        */
+
+        function sitDown() {
           if (isSeated) return;
           isSeated = true;
 
@@ -121,16 +137,16 @@
             startEvents: "startMove",
           });
 
-          // Déclenche
+          // Déclencher animations
           cameraEl.emit("startMove");
 
-          // Fin de l'anim => réactiver look-controls
+          // À la fin, on réactive la rotation
           cameraEl.addEventListener(
             "animationcomplete__campos",
             () => {
-              // On peut forcer la rotation interne
               cameraEl.components["look-controls"].pitchObject.rotation.x = 0;
               cameraEl.components["look-controls"].yawObject.rotation.y = 185;
+
               cameraEl.setAttribute("look-controls", "enabled", true);
               cameraEl.setAttribute(
                 "look-controls",
@@ -141,7 +157,7 @@
             { once: true }
           );
 
-          // Apparition baguettes
+          // Fade-in baguettes
           leftStickEl.setAttribute("visible", true);
           leftStickEl.setAttribute("animation__fadein_left", {
             property: "material.opacity",
@@ -159,63 +175,81 @@
             dur: 800,
             easing: "easeInOutQuad",
           });
-        });
+        }
 
-        // -- Espace => se relever --
-        document.body.addEventListener("keyup", (evt) => {
-          if (evt.code === "Space" && isSeated) {
-            isSeated = false;
+        function standUp() {
+          if (!isSeated) return;
+          isSeated = false;
 
-            // Stop animations
-            cameraEl.removeAttribute("animation__campos");
-            cameraEl.removeAttribute("animation__camrot");
+          // Annuler animations
+          cameraEl.removeAttribute("animation__campos");
+          cameraEl.removeAttribute("animation__camrot");
 
-            // Caméra -> position initiale
-            cameraEl.setAttribute("position", { x: 0, y: 2, z: 4 });
-            cameraEl.setAttribute("rotation", { x: 0, y: 0, z: 0 });
-            cameraEl.components["look-controls"].pitchObject.rotation.x = 0;
-            cameraEl.components["look-controls"].yawObject.rotation.y = 0;
+          // Caméra -> position initiale
+          cameraEl.setAttribute("position", { x: 0, y: 2, z: 4 });
+          cameraEl.setAttribute("rotation", { x: 0, y: 0, z: 0 });
 
-            cameraEl.setAttribute("wasd-controls", "enabled", true);
-            cameraEl.setAttribute("look-controls", "pointerLockEnabled", false);
+          cameraEl.components["look-controls"].pitchObject.rotation.x = 0;
+          cameraEl.components["look-controls"].yawObject.rotation.y = 0;
 
-            // Fade out baguettes (1->0)
-            leftStickEl.setAttribute("animation__fadeout_left", {
-              property: "material.opacity",
-              from: 1,
-              to: 0,
-              dur: 600,
-              easing: "easeInOutQuad",
-              startEvents: "hideLeft",
-            });
-            rightStickEl.setAttribute("animation__fadeout_right", {
-              property: "material.opacity",
-              from: 1,
-              to: 0,
-              dur: 600,
-              easing: "easeInOutQuad",
-              startEvents: "hideRight",
-            });
+          cameraEl.setAttribute("wasd-controls", "enabled", true);
+          cameraEl.setAttribute("look-controls", "pointerLockEnabled", false);
 
-            leftStickEl.addEventListener(
-              "animationcomplete__fadeout_left",
-              () => {
-                leftStickEl.setAttribute("visible", false);
-              },
-              { once: true }
-            );
-            rightStickEl.addEventListener(
-              "animationcomplete__fadeout_right",
-              () => {
-                rightStickEl.setAttribute("visible", false);
-              },
-              { once: true }
-            );
+          // Fade-out baguettes
+          leftStickEl.setAttribute("animation__fadeout_left", {
+            property: "material.opacity",
+            from: 1,
+            to: 0,
+            dur: 600,
+            easing: "easeInOutQuad",
+            startEvents: "hideLeft",
+          });
+          rightStickEl.setAttribute("animation__fadeout_right", {
+            property: "material.opacity",
+            from: 1,
+            to: 0,
+            dur: 600,
+            easing: "easeInOutQuad",
+            startEvents: "hideRight",
+          });
 
-            leftStickEl.emit("hideLeft");
-            rightStickEl.emit("hideRight");
+          leftStickEl.addEventListener(
+            "animationcomplete__fadeout_left",
+            () => {
+              leftStickEl.setAttribute("visible", false);
+            },
+            { once: true }
+          );
+          rightStickEl.addEventListener(
+            "animationcomplete__fadeout_right",
+            () => {
+              rightStickEl.setAttribute("visible", false);
+            },
+            { once: true }
+          );
+
+          leftStickEl.emit("hideLeft");
+          rightStickEl.emit("hideRight");
+        }
+
+        // Gère le "toggle" quand on appuie sur un bouton (ex: trigger) d'une manette
+        function onButtonDown(evt) {
+          // evt.detail.id peut valoir 'trigger', 'grip', 'surface', 'thumbstick', etc.
+          // On choisit par ex. 'trigger'
+          if (evt.detail.id === "trigger") {
+            // Si on n'est pas assis => s'asseoir
+            // Si on est assis => se relever
+            if (!isSeated) {
+              sitDown();
+            } else {
+              standUp();
+            }
           }
-        });
+        }
+
+        // Écoute des deux manettes (vous pouvez choisir d'en écouter qu'une seule)
+        leftHandEl.addEventListener("buttondown", onButtonDown);
+        rightHandEl.addEventListener("buttondown", onButtonDown);
       });
     </script>
   </body>
