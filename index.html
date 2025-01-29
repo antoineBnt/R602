@@ -11,19 +11,20 @@
   <body>
     <a-scene>
       <a-assets>
-        <!-- Modèle de la batterie -->
+        <!-- Vos assets inchangés -->
         <a-asset-item
           id="batterieModel"
           src="assets/batterie.glb"
         ></a-asset-item>
-        <!-- Modèle de baguettes -->
         <a-asset-item
           id="baguettesModel"
           src="assets/baguette.glb"
         ></a-asset-item>
-        <a-asset-item id="projecteur" src="assets/projecteur.glb">
-        </a-asset-item>
-        <a-asset-item id="sol" src="assets/sol.glb"> </a-asset-item>
+        <a-asset-item
+          id="projecteur"
+          src="assets/projecteur.glb"
+        ></a-asset-item>
+        <a-asset-item id="sol" src="assets/sol.glb"></a-asset-item>
       </a-assets>
 
       <!-- Batterie (cliquable) -->
@@ -33,73 +34,6 @@
         position="0 1.6 -5"
         class="clickable"
       ></a-entity>
-
-      <!-- Projecteurs avec lumières -->
-      <a-entity
-        id="projecteur1"
-        gltf-model="#projecteur"
-        position="0 8 0"
-        rotation="-40 0 0"
-      >
-        <a-light
-          type="spot"
-          color="#ffffff"
-          intensity="1.5"
-          position="0 0 0"
-          target="#drum"
-          angle="30"
-          penumbra="0.5"
-        ></a-light>
-      </a-entity>
-
-      <a-entity
-        id="projecteur2"
-        gltf-model="#projecteur"
-        position="-3 8 -2"
-        rotation="-45 -20 0"
-      >
-        <a-light
-          type="spot"
-          color="#ffffff"
-          intensity="1.5"
-          position="0 0 0"
-          target="#drum"
-          angle="30"
-          penumbra="0.5"
-        ></a-light>
-      </a-entity>
-
-      <a-entity
-        id="projecteur3"
-        gltf-model="#projecteur"
-        position="3 8 -2"
-        rotation="-45 20 0"
-      >
-        <a-entity
-          light=" color: #FFFFFF; target: #ocean; intensity: 0.1;"
-          position="10 10 10"
-          animation="property: rotation; to: 0 -360 0; loop: true; dur: 20000; easing: linear"
-        >
-        </a-entity>
-
-        <!-- Définit le type de lumière. Ici, "spot" signifie qu'il s'agit d'un projecteur. -->
-        <!-- Définit la couleur de la lumière en utilisant un code hexadécimal. Ici, blanc. -->
-        <!-- Définit l'intensité de la lumière. Une valeur plus élevée signifie une lumière plus brillante. -->
-        <!-- Définit la position de la lumière dans l'espace 3D avec les coordonnées x, y, z. -->
-        <!-- Définit l'élément cible que la lumière éclaire. Ici, un élément avec l'ID "drum". -->
-        <!-- Définit l'angle du cône de lumière pour un projecteur. Plus l'angle est petit, plus le faisceau est étroit. -->
-        <!-- Définit la pénombre du projecteur, c'est-à-dire la douceur des bords du faisceau. Une valeur de 0.5 signifie une transition douce. -->
-
-        <a-light
-          type="spot"
-          color="#ffffff"
-          intensity="0.5"
-          position="0 0 0"
-          target="#drum"
-          angle="10"
-          penumbra="0.1"
-        ></a-light>
-      </a-entity>
 
       <!-- Baguette gauche -->
       <a-entity
@@ -137,13 +71,86 @@
         ></a-entity>
       </a-entity>
 
-      <!-- Sol -->
-      <!-- <a-entity
-        geometry="primitive: box; width: 5; height: 1; depth: 15"
-        material="color: #A47112"
-        position="0 0.5 0"
-      ></a-entity> -->
+      <!-- Projecteur 1 + spot -->
+      <a-entity
+        id="projecteur1"
+        gltf-model="#projecteur"
+        position="0 8 0"
+        rotation="-40 0 0"
+      >
+        <!-- Lumière d’origine -->
+        <a-light
+          type="spot"
+          color="#ffffff"
+          intensity="1.5"
+          position="0 0 0"
+          target="#drum"
+          angle="30"
+          penumbra="0.5"
+        ></a-light>
 
+        <!-- Sphère blanche qui émet de la lumière supplémentaire -->
+        <a-entity
+          geometry="primitive: sphere; radius: 0.25"
+          material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
+          position="0 -0.9 -0.2"
+          light="type: point; color: #FFFFFF; intensity: 2; distance: 1"
+        ></a-entity>
+      </a-entity>
+
+      <!-- Projecteur 2 + spot + sphère blanche -->
+      <a-entity
+        id="projecteur2"
+        gltf-model="#projecteur"
+        position="-3 8 -2"
+        rotation="-45 -20 0"
+      >
+        <a-light
+          type="spot"
+          color="#ffffff"
+          intensity="1.5"
+          position="0 0 0"
+          target="#drum"
+          angle="30"
+          penumbra="0.5"
+        ></a-light>
+
+        <a-entity
+          geometry="primitive: sphere; radius: 0.25"
+          material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
+          position="0 -0.9 -0.2"
+          light="type: point; color: #FFFFFF; intensity: 2; distance: 1"
+        ></a-entity>
+      </a-entity>
+
+      <!-- Projecteur 3 + spot + sphère blanche -->
+      <a-entity
+        id="projecteur3"
+        gltf-model="#projecteur"
+        position="3 8 -2"
+        rotation="-45 20 0"
+      >
+        <!-- Lumière d’origine -->
+        <a-light
+          type="spot"
+          color="#ffffff"
+          intensity="0.5"
+          position="0 0 0"
+          target="#drum"
+          angle="10"
+          penumbra="0.1"
+        ></a-light>
+
+        <!-- Sphère blanche qui émet de la lumière supplémentaire -->
+        <a-entity
+          geometry="primitive: sphere; radius: 0.25"
+          material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
+          position="0 -0.9 -0.2"
+          light="type: point; color: #FFFFFF; intensity: 2; distance: 1"
+        ></a-entity>
+      </a-entity>
+
+      <!-- Vos autres entités inchangées... -->
       <a-entity
         gltf-model="#sol"
         position="0 -1 10"
@@ -164,13 +171,19 @@
         density="400"
         opacity="1"
         position="0 -0,4 0"
-        material="shader: standard; color: #182264"
-      >
-      </a-ocean>
+        material="shader: standard; color: #182264; rugness: 1"
+      ></a-ocean>
+
+      <a-entity
+      materials:="rugness: 0.1 "
+        light="color: #FFFFFF; target: #ocean; intensity: 0.07;"
+        position="0 20 0"
+        animation="property: rotation; to: 0 -360 0; loop: true; dur: 20000; easing: linear"
+      ></a-entity>
 
       <a-sky src="assets/sky.jpg"></a-sky>
 
-      <!-- Caméra + contrôles (libres au départ) -->
+      <!-- Caméra + contrôles (inchangés) -->
       <a-entity
         id="playerCam"
         camera
