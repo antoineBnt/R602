@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.4/dist/aframe-extras.min.js"></script>
   </head>
   <body>
-    <a-scene>
+    <a-scene fog="type: linear; color: #AAA; near: 0.5; far: 40">
       <a-assets>
         <!-- Vos assets inchangés -->
         <a-asset-item
@@ -31,7 +31,7 @@
       <a-entity
         id="drum"
         gltf-model="#batterieModel"
-        position="0 1.6 -5"
+        position="0 1.5 -5"
         class="clickable"
       ></a-entity>
 
@@ -181,7 +181,7 @@
         animation="property: rotation; to: 0 -360 0; loop: true; dur: 20000; easing: linear"
       ></a-entity>
 
-      <a-sky src="assets/sky.jpg"></a-sky>
+      <a-sky src="assets/sky.jpg" material="fog: false"></a-sky>
 
       <!-- Caméra + contrôles (inchangés) -->
       <a-entity
