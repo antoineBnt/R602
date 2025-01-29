@@ -2,16 +2,23 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <title>Drag Baguettes (A-Frame Extras)</title>
+    <title>Drag Baguettes (A-Frame Extras VR)</title>
+
     <!-- A-Frame principal -->
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-    <!-- A-Frame Extras (pour dragndrop) -->
+
+    <!-- A-Frame Extras (dragndrop + movement-controls + gamepad) -->
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.4/dist/aframe-extras.min.js"></script>
+    <!-- Assure-toi que la version inclut bien le "movement-controls" -->
   </head>
   <body>
-    <a-scene fog="type: linear; color: #244060; near: 0.5; far: 25">
+    <a-scene
+      fog="type: linear; color: #244060; near: 0.5; far: 25"
+      vr-mode-ui="enabled: true"
+    >
+      <!-- 1) ASSETS -->
       <a-assets>
-        <!-- Vos assets inchangés -->
+        <!-- Modèles 3D -->
         <a-asset-item
           id="batterieModel"
           src="assets/batterie.glb"
@@ -25,7 +32,42 @@
           src="assets/projecteur.glb"
         ></a-asset-item>
         <a-asset-item id="sol" src="assets/sol.glb"></a-asset-item>
+
+        <!-- Son d'océan -->
+        <audio
+          id="oceanSnd"
+          src="assets/ocean-sound.mp3"
+          preload="auto"
+        ></audio>
       </a-assets>
+
+      <!-- 2) OCÉAN AVEC SON -->
+      <a-ocean
+        id="ocean"
+        width="500"
+        depth="500"
+        density="400"
+        opacity="1"
+        position="0 -0.4 0"
+        material="shader: standard; color: #182264; roughness: 1"
+        sound="src: #oceanSnd; autoplay: true; loop: true; positional: true; volume: 0.8"
+      ></a-ocean>
+
+      <!-- 3) PROJECTEURS, OBJETS, ETC. -->
+      <!-- Sol 3D -->
+      <a-entity
+        gltf-model="#sol"
+        position="0 -1 10"
+        scale="2 2 2"
+        rotation="0 90 0"
+      ></a-entity>
+
+      <!-- Plan au sol de base, si besoin -->
+      <a-entity
+        geometry="primitive: plane; width: 100; height: 100"
+        material="color: #1D2A80"
+        rotation="-90 0 0"
+      ></a-entity>
 
       <!-- Batterie (cliquable) -->
       <a-entity
@@ -43,8 +85,7 @@
         position="0.2 1.8 -5"
         scale="2 2 2"
       >
-        <a-entity gltf-model="#baguettesModel" scale="1 1 1"></a-entity>
-
+        <a-entity gltf-model="#baguettesModel"></a-entity>
         <a-entity
           class="draggable"
           dragndrop
@@ -61,8 +102,7 @@
         position="-0.2 1.8 -5"
         scale="2 2 2"
       >
-        <a-entity gltf-model="#baguettesModel" scale="1 1 1"></a-entity>
-
+        <a-entity gltf-model="#baguettesModel"></a-entity>
         <a-entity
           class="draggable"
           dragndrop
@@ -71,14 +111,13 @@
         ></a-entity>
       </a-entity>
 
-      <!-- Projecteur 1 + spot -->
+      <!-- Projecteur 1 + spot + sphère blanche -->
       <a-entity
         id="projecteur1"
         gltf-model="#projecteur"
         position="0 8 0"
         rotation="-40 0 0"
       >
-        <!-- Lumière d’origine -->
         <a-light
           type="spot"
           color="#ffffff"
@@ -89,7 +128,6 @@
           penumbra="0.5"
         ></a-light>
 
-        <!-- Sphère blanche qui émet de la lumière supplémentaire -->
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -130,7 +168,6 @@
         position="3 8 -2"
         rotation="-45 20 0"
       >
-        <!-- Lumière d’origine -->
         <a-light
           type="spot"
           color="#ffffff"
@@ -141,7 +178,6 @@
           penumbra="0.1"
         ></a-light>
 
-        <!-- Sphère blanche qui émet de la lumière supplémentaire -->
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -150,56 +186,51 @@
         ></a-entity>
       </a-entity>
 
-      <!-- Vos autres entités inchangées... -->
+      <!-- Lumière supplémentaire qui tourne (votre code existant) -->
       <a-entity
-        gltf-model="#sol"
-        position="0 -1 10"
-        scale="2 2 2"
-        rotation="0 90 0"
-      ></a-entity>
-
-      <a-entity
-        geometry="primitive: plane; width: 100; height: 100"
-        material="color: #1D2A80"
-        rotation="-90 0 0"
-      ></a-entity>
-
-      <a-ocean
-        id="ocean"
-        width="500"
-        depth="500"
-        density="400"
-        opacity="1"
-        position="0 -0,4 0"
-        material="shader: standard; color: #182264; rugness: 1"
-      ></a-ocean>
-
-      <a-entity
-        materials="rugness: 0.1 "
         light="color: #FFFFFF; target: #ocean; intensity: 0.07;"
         position="0 20 0"
         animation="property: rotation; to: 0 -360 0; loop: true; dur: 20000; easing: linear"
       ></a-entity>
 
-      <a-sky src="assets/sky.jpg" material="fog: false"></a-sky>
-
-      <!-- Caméra + contrôles (inchangés) -->
-      <a-entity position="0 0.8 0">
+      <!-- 4) LE RIG + CAMÉRA + CONTRÔLEURS VR -->
+      <!-- Le rig (gère la locomotion VR) -->
+      <a-entity id="playerRig" movement-controls="speed: 0.1" position="0 0 0">
+        <!-- Caméra (hauteur d’environ 1.6m) -->
         <a-entity
           id="playerCam"
           camera
-          cursor="rayOrigin: mouse"
-          raycaster="objects: .clickable, .draggable"
-          rotation="0 1.6 0"
+          position="0 1.6 0"
           look-controls="pointerLockEnabled: false"
         ></a-entity>
+
+        <!-- Main gauche (joystick) -->
+        <a-entity
+          id="leftHand"
+          oculus-touch-controls="hand: left"
+          gamepad-controls="hand: left"
+        ></a-entity>
+
+        <!-- Main droite (laser + clic) -->
+        <a-entity
+          id="rightHand"
+          oculus-touch-controls="hand: right"
+          gamepad-controls="hand: right"
+          laser-controls
+          raycaster="objects: .clickable, .draggable; showLine: true"
+          line="color: white; opacity: 0.8"
+        ></a-entity>
       </a-entity>
+
+      <!-- 5) Ciel (non affecté par le brouillard) -->
+      <a-sky src="assets/sky.jpg" material="fog: false"></a-sky>
     </a-scene>
-    <!-- Script d'animation / clic / opacité -->
+
+    <!-- 6) SCRIPT PRINCIPAL -->
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const drumEl = document.getElementById("drum");
-        const cameraEl = document.getElementById("playerCam");
+        const playerRigEl = document.getElementById("playerRig");
         const leftStickEl = document.getElementById("baguetteLeft");
         const rightStickEl = document.getElementById("baguetteRight");
 
@@ -210,48 +241,27 @@
           if (isSeated) return;
           isSeated = true;
 
-          // Désactiver WASD + look-controls pendant l'anim
-          cameraEl.setAttribute("wasd-controls", "enabled", false);
-          cameraEl.setAttribute("look-controls", "enabled", false);
-
-          // Animer la position
-          cameraEl.setAttribute("animation__campos", {
+          // On déplace le RIG (caméra + contrôleurs) vers la batterie
+          playerRigEl.setAttribute("animation__rigpos", {
             property: "position",
-            to: "0 2.3 -5.6",
+            to: { x: 0, y: 0, z: -4.4 }, // Ajuster pour être devant la batterie
             dur: 1000,
             easing: "easeInOutQuad",
             startEvents: "startMove",
           });
-
-          // Animer la rotation
-          cameraEl.setAttribute("animation__camrot", {
+          // On oriente éventuellement le rig (si besoin)
+          playerRigEl.setAttribute("animation__rigrot", {
             property: "rotation",
-            to: "0 180 0",
+            to: { x: 0, y: 180, z: 0 },
             dur: 1000,
             easing: "easeInOutQuad",
             startEvents: "startMove",
           });
 
-          // Déclenche
-          cameraEl.emit("startMove");
+          // Déclenche l'animation
+          playerRigEl.emit("startMove");
 
-          // Fin de l'anim => réactiver look-controls
-          cameraEl.addEventListener(
-            "animationcomplete__campos",
-            () => {
-              cameraEl.components["look-controls"].pitchObject.rotation.x = 0;
-              cameraEl.components["look-controls"].yawObject.rotation.y = 185;
-              cameraEl.setAttribute("look-controls", "enabled", true);
-              cameraEl.setAttribute(
-                "look-controls",
-                "pointerLockEnabled",
-                false
-              );
-            },
-            { once: true }
-          );
-
-          // Apparition baguettes
+          // Apparition des baguettes
           leftStickEl.setAttribute("visible", true);
           leftStickEl.setAttribute("animation__fadein_left", {
             property: "material.opacity",
@@ -271,25 +281,21 @@
           });
         });
 
-        // -- Espace -> se relever --
+        // -- Espace -> se relever (pour usage desktop) --
+        // En VR, vous pouvez rajouter un autre bouton si nécessaire
         document.body.addEventListener("keyup", (evt) => {
           if (evt.code === "Space" && isSeated) {
             isSeated = false;
 
             // Stop animations
-            cameraEl.removeAttribute("animation__campos");
-            cameraEl.removeAttribute("animation__camrot");
+            playerRigEl.removeAttribute("animation__rigpos");
+            playerRigEl.removeAttribute("animation__rigrot");
 
-            // Caméra -> position/rotation initiale
-            cameraEl.setAttribute("position", { x: 0, y: 2, z: 4 });
-            cameraEl.setAttribute("rotation", { x: 0, y: 0, z: 0 });
-            cameraEl.components["look-controls"].pitchObject.rotation.x = 0;
-            cameraEl.components["look-controls"].yawObject.rotation.y = 0;
+            // Remet le rig à sa position/rotation initiale
+            playerRigEl.setAttribute("position", { x: 0, y: 0, z: 0 });
+            playerRigEl.setAttribute("rotation", { x: 0, y: 0, z: 0 });
 
-            cameraEl.setAttribute("wasd-controls", "enabled", true);
-            cameraEl.setAttribute("look-controls", "pointerLockEnabled", false);
-
-            // Fade out baguettes
+            // Masquer baguettes
             leftStickEl.setAttribute("animation__fadeout_left", {
               property: "material.opacity",
               from: 1,
