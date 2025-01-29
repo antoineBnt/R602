@@ -27,21 +27,6 @@
         <a-asset-item id="sol" src="assets/sol.glb"></a-asset-item>
       </a-assets>
 
-
-      <a-entity position="0 1.6 0">
-        <a-entity
-        id="playerCam"
-        camera
-        cursor="rayOrigin: mouse"
-        raycaster="objects: .clickable, .draggable"
-        rotation="0 0 0"
-        wasd-controls
-        oculus-touch-controls="hand: left"
-        oculus-touch-controls="hand: right"
-        look-controls="pointerLockEnabled: false"
-      ></a-entity>
-    </a-entity>
-
       <!-- Batterie (cliquable) -->
       <a-entity
         id="drum"
@@ -190,7 +175,7 @@
       ></a-ocean>
 
       <a-entity
-      materials:="rugness: 0.1 "
+        materials="rugness: 0.1 "
         light="color: #FFFFFF; target: #ocean; intensity: 0.07;"
         position="0 20 0"
         animation="property: rotation; to: 0 -360 0; loop: true; dur: 20000; easing: linear"
@@ -199,8 +184,16 @@
       <a-sky src="assets/sky.jpg" material="fog: false"></a-sky>
 
       <!-- Caméra + contrôles (inchangés) -->
-       
-      
+      <a-entity position="0 0.8 0">
+        <a-entity
+          id="playerCam"
+          camera
+          cursor="rayOrigin: mouse"
+          raycaster="objects: .clickable, .draggable"
+          rotation="0 1.6 0"
+          look-controls="pointerLockEnabled: false"
+        ></a-entity>
+      </a-entity>
     </a-scene>
     <!-- Script d'animation / clic / opacité -->
     <script>
