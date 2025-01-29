@@ -194,13 +194,11 @@
       ></a-entity>
 
       <!-- 4) LE RIG + CAMÉRA + CONTRÔLEURS VR -->
-      <!-- Le rig (gère la locomotion VR) -->
       <a-entity
         id="playerRig"
         movement-controls="speed: 0.1"
         position="0 0.8 0"
       >
-        <!-- Caméra (hauteur d’environ 1.6m) -->
         <a-entity
           id="playerCam"
           camera
@@ -240,55 +238,49 @@
 
         let isSeated = false;
 
-        // -- Clic sur la batterie -> s'asseoir --
+        // -- Clic sur la batterie -> toggle assis/debout --
         drumEl.addEventListener("click", () => {
-          if (isSeated) return;
-          isSeated = true;
+          if (!isSeated) {
+            // -- S'asseoir --
+            isSeated = true;
 
-          // On déplace le RIG (caméra + contrôleurs) vers la batterie
-          playerRigEl.setAttribute("animation__rigpos", {
-            property: "position",
-            to: { x: 0, y: 1, z: -6 }, // Ajuster pour être devant la batterie
-            dur: 1000,
-            easing: "easeInOutQuad",
-            startEvents: "startMove",
-          });
-          // On oriente éventuellement le rig (si besoin)
-          playerRigEl.setAttribute("animation__rigrot", {
-            property: "rotation",
-            to: { x: 0, y: 180, z: 0 },
-            dur: 1000,
-            easing: "easeInOutQuad",
-            startEvents: "startMove",
-          });
+            playerRigEl.setAttribute("animation__rigpos", {
+              property: "position",
+              to: { x: 0, y: 1, z: -6 },
+              dur: 1000,
+              easing: "easeInOutQuad",
+              startEvents: "startMove",
+            });
+            playerRigEl.setAttribute("animation__rigrot", {
+              property: "rotation",
+              to: { x: 0, y: 180, z: 0 },
+              dur: 1000,
+              easing: "easeInOutQuad",
+              startEvents: "startMove",
+            });
 
-          // Déclenche l'animation
-          playerRigEl.emit("startMove");
+            playerRigEl.emit("startMove");
 
-          // Apparition des baguettes
-          leftStickEl.setAttribute("visible", true);
-          leftStickEl.setAttribute("animation__fadein_left", {
-            property: "material.opacity",
-            from: 0,
-            to: 1,
-            dur: 800,
-            easing: "easeInOutQuad",
-          });
+            // Apparition des baguettes
+            leftStickEl.setAttribute("visible", true);
+            leftStickEl.setAttribute("animation__fadein_left", {
+              property: "material.opacity",
+              from: 0,
+              to: 1,
+              dur: 800,
+              easing: "easeInOutQuad",
+            });
 
-          rightStickEl.setAttribute("visible", true);
-          rightStickEl.setAttribute("animation__fadein_right", {
-            property: "material.opacity",
-            from: 0,
-            to: 1,
-            dur: 800,
-            easing: "easeInOutQuad",
-          });
-        });
-
-        // -- Espace -> se relever (pour usage desktop) --
-        // En VR, vous pouvez rajouter un autre bouton si nécessaire
-        document.body.addEventListener("keyup", (evt) => {
-          if (evt.code === "Space" && isSeated) {
+            rightStickEl.setAttribute("visible", true);
+            rightStickEl.setAttribute("animation__fadein_right", {
+              property: "material.opacity",
+              from: 0,
+              to: 1,
+              dur: 800,
+              easing: "easeInOutQuad",
+            });
+          } else {
+            // -- Se relever --
             isSeated = false;
 
             // Stop animations
@@ -296,7 +288,7 @@
             playerRigEl.removeAttribute("animation__rigrot");
 
             // Remet le rig à sa position/rotation initiale
-            playerRigEl.setAttribute("position", { x: 0, y: 0, z: 0 });
+            playerRigEl.setAttribute("position", { x: 0, y: 0.8, z: 0 });
             playerRigEl.setAttribute("rotation", { x: 0, y: 0, z: 0 });
 
             // Masquer baguettes
