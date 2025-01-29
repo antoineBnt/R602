@@ -7,9 +7,8 @@
     <!-- A-Frame principal -->
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 
-    <!-- A-Frame Extras (dragndrop + movement-controls + gamepad) -->
+    <!-- A-Frame Extras (movement-controls, dragndrop, gamepad, etc.) -->
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.4/dist/aframe-extras.min.js"></script>
-    <!-- Assure-toi que la version inclut bien le "movement-controls" -->
   </head>
   <body>
     <a-scene
@@ -39,6 +38,11 @@
           src="assets/ocean-sound.mp3"
           preload="auto"
         ></audio>
+
+        <!-- 3 sons de batterie (à personnaliser selon vos fichiers) -->
+        <audio id="drumSound1" src="assets/drum1.mp3" preload="auto"></audio>
+        <audio id="drumSound2" src="assets/drum2.mp3" preload="auto"></audio>
+        <audio id="drumSound3" src="assets/drum3.mp3" preload="auto"></audio>
       </a-assets>
 
       <!-- 2) OCÉAN AVEC SON -->
@@ -50,11 +54,10 @@
         opacity="1"
         position="0 0.1 0"
         material="shader: standard; color: #182264; roughness: 1"
-        sound="src: #oceanSnd; autoplay: true; loop: true; positional: true; volume: 0.8"
+        sound="src: #oceanSnd; autoplay: true; loop: true; positional: true; volume: 0.6"
       ></a-ocean>
 
       <!-- 3) PROJECTEURS, OBJETS, ETC. -->
-      <!-- Sol 3D -->
       <a-entity
         gltf-model="#sol"
         position="0 -1 10"
@@ -62,7 +65,7 @@
         rotation="0 90 0"
       ></a-entity>
 
-      <!-- Plan au sol de base, si besoin -->
+      <!-- Plan au sol, si besoin -->
       <a-entity
         geometry="primitive: plane; width: 100; height: 100"
         material="color: #1D2A80"
@@ -76,40 +79,6 @@
         position="0 1.5 -5"
         class="clickable"
       ></a-entity>
-
-      <!-- Baguette gauche -->
-      <a-entity
-        id="baguetteLeft"
-        visible="false"
-        material="opacity: 0; transparent: true"
-        position="0.2 1.8 -5"
-        scale="2 2 2"
-      >
-        <a-entity gltf-model="#baguettesModel"></a-entity>
-        <a-entity
-          class="draggable"
-          dragndrop
-          geometry="primitive: box; width: 0.15; height: 0.5; depth: 0.15"
-          material="opacity: 0; wireframe: true; transparent: true"
-        ></a-entity>
-      </a-entity>
-
-      <!-- Baguette droite -->
-      <a-entity
-        id="baguetteRight"
-        visible="false"
-        material="opacity: 0; transparent: true"
-        position="-0.2 1.8 -5"
-        scale="2 2 2"
-      >
-        <a-entity gltf-model="#baguettesModel"></a-entity>
-        <a-entity
-          class="draggable"
-          dragndrop
-          geometry="primitive: box; width: 0.15; height: 0.5; depth: 0.15"
-          material="opacity: 0; wireframe: true; transparent: true"
-        ></a-entity>
-      </a-entity>
 
       <!-- Projecteur 1 + spot + sphère blanche -->
       <a-entity
@@ -127,7 +96,6 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
-
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -152,7 +120,6 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
-
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -177,7 +144,6 @@
           angle="10"
           penumbra="0.1"
         ></a-light>
-
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -186,7 +152,7 @@
         ></a-entity>
       </a-entity>
 
-      <!-- Lumière supplémentaire qui tourne (votre code existant) -->
+      <!-- Lumière supplémentaire qui tourne -->
       <a-entity
         light="color: #FFFFFF; target: #ocean; intensity: 0.07;"
         position="0 20 0"
@@ -199,6 +165,7 @@
         movement-controls="speed: 0.1"
         position="0 0.8 0"
       >
+        <!-- Caméra -->
         <a-entity
           id="playerCam"
           camera
@@ -206,14 +173,22 @@
           look-controls="pointerLockEnabled: false"
         ></a-entity>
 
-        <!-- Main gauche (joystick) -->
+        <!-- Main gauche (joystick) + baguette -->
         <a-entity
           id="leftHand"
           oculus-touch-controls="hand: left"
           gamepad-controls="hand: left"
-        ></a-entity>
+        >
+          <!-- Baguette gauche dans la main gauche -->
+          <a-entity
+            gltf-model="#baguettesModel"
+            position="0 0 -0.1"
+            rotation="0 180 0"
+            scale="0.5 0.5 0.5"
+          ></a-entity>
+        </a-entity>
 
-        <!-- Main droite (laser + clic) -->
+        <!-- Main droite (laser + clic) + baguette -->
         <a-entity
           id="rightHand"
           oculus-touch-controls="hand: right"
@@ -221,29 +196,58 @@
           laser-controls
           raycaster="objects: .clickable, .draggable; showLine: true"
           line="color: white; opacity: 0.8"
-        ></a-entity>
+        >
+          <!-- Baguette droite dans la main droite -->
+          <a-entity
+            gltf-model="#baguettesModel"
+            position="0 0 -0.1"
+            rotation="0 180 0"
+            scale="0.5 0.5 0.5"
+          ></a-entity>
+        </a-entity>
       </a-entity>
 
       <!-- 5) Ciel (non affecté par le brouillard) -->
       <a-sky src="assets/sky.jpg" material="fog: false"></a-sky>
+
+      <!-- 6) Entité pour jouer les sons de drum -->
+      <a-entity id="drumSound" sound="autoplay: false; volume: 1"></a-entity>
     </a-scene>
 
-    <!-- 6) SCRIPT PRINCIPAL -->
+    <!-- SCRIPT PRINCIPAL -->
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const drumEl = document.getElementById("drum");
         const playerRigEl = document.getElementById("playerRig");
-        const leftStickEl = document.getElementById("baguetteLeft");
-        const rightStickEl = document.getElementById("baguetteRight");
+        const drumSoundEl = document.getElementById("drumSound");
 
         let isSeated = false;
 
-        // -- Clic sur la batterie -> toggle assis/debout --
+        // Tableau d'IDs audio pour les sons de batterie
+        const drumSounds = ["#drumSound1", "#drumSound2", "#drumSound3"];
+
+        // Fonction pour jouer un son de batterie aléatoire
+        function playRandomDrumSound() {
+          const randomIndex = Math.floor(Math.random() * drumSounds.length);
+          const randomSrc = drumSounds[randomIndex];
+          // On met à jour la source du composant 'sound'
+          drumSoundEl.setAttribute("sound", "src", randomSrc);
+          // On arrête le son précédent puis on joue le nouveau
+          drumSoundEl.components.sound.stopSound();
+          drumSoundEl.components.sound.playSound();
+        }
+
+        // -- Clic sur la batterie -> toggle assis/debout + jouer un son --
         drumEl.addEventListener("click", () => {
+          // On joue toujours un son de drum
+          playRandomDrumSound();
+
+          // Ensuite on gère l'assis/debout
           if (!isSeated) {
             // -- S'asseoir --
             isSeated = true;
 
+            // Animer la position/rotation du RIG
             playerRigEl.setAttribute("animation__rigpos", {
               property: "position",
               to: { x: 0, y: 1, z: -6 },
@@ -260,72 +264,17 @@
             });
 
             playerRigEl.emit("startMove");
-
-            // Apparition des baguettes
-            leftStickEl.setAttribute("visible", true);
-            leftStickEl.setAttribute("animation__fadein_left", {
-              property: "material.opacity",
-              from: 0,
-              to: 1,
-              dur: 800,
-              easing: "easeInOutQuad",
-            });
-
-            rightStickEl.setAttribute("visible", true);
-            rightStickEl.setAttribute("animation__fadein_right", {
-              property: "material.opacity",
-              from: 0,
-              to: 1,
-              dur: 800,
-              easing: "easeInOutQuad",
-            });
           } else {
             // -- Se relever --
             isSeated = false;
 
-            // Stop animations
+            // Stoppe l'animation
             playerRigEl.removeAttribute("animation__rigpos");
             playerRigEl.removeAttribute("animation__rigrot");
 
             // Remet le rig à sa position/rotation initiale
             playerRigEl.setAttribute("position", { x: 0, y: 0.8, z: 0 });
             playerRigEl.setAttribute("rotation", { x: 0, y: 0, z: 0 });
-
-            // Masquer baguettes
-            leftStickEl.setAttribute("animation__fadeout_left", {
-              property: "material.opacity",
-              from: 1,
-              to: 0,
-              dur: 600,
-              easing: "easeInOutQuad",
-              startEvents: "hideLeft",
-            });
-            rightStickEl.setAttribute("animation__fadeout_right", {
-              property: "material.opacity",
-              from: 1,
-              to: 0,
-              dur: 600,
-              easing: "easeInOutQuad",
-              startEvents: "hideRight",
-            });
-
-            leftStickEl.addEventListener(
-              "animationcomplete__fadeout_left",
-              () => {
-                leftStickEl.setAttribute("visible", false);
-              },
-              { once: true }
-            );
-            rightStickEl.addEventListener(
-              "animationcomplete__fadeout_right",
-              () => {
-                rightStickEl.setAttribute("visible", false);
-              },
-              { once: true }
-            );
-
-            leftStickEl.emit("hideLeft");
-            rightStickEl.emit("hideRight");
           }
         });
       });
