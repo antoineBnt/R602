@@ -315,8 +315,8 @@
             const currentVol = musicSoundEl.getAttribute("sound").volume;
             let nextVol = currentVol + 0.08;
 
-            if (nextVol >= 8.0) {
-              nextVol = 8.0;
+            if (nextVol >= 9.0) {
+              nextVol = 9.0;
               clearInterval(fadeInterval);
             }
             musicSoundEl.setAttribute("sound", "volume", nextVol);
