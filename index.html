@@ -32,17 +32,37 @@
         ></a-asset-item>
         <a-asset-item id="sol" src="assets/sol.glb"></a-asset-item>
 
+        <!-- Sons de percussions -->
+        <audio
+          id="sound-baguette"
+          src="assets/Baguette.wav"
+          preload="auto"
+        ></audio>
+        <audio
+          id="sound-batterie-grave"
+          src="assets/batterie-grave.wav"
+          preload="auto"
+        ></audio>
+        <audio
+          id="sound-batterie"
+          src="assets/batterie.wav"
+          preload="auto"
+        ></audio>
+        <audio
+          id="sound-cymbale"
+          src="assets/cymbale.wav"
+          preload="auto"
+        ></audio>
+
+        <!-- Musique d’ambiance quand on s’assoit -->
+        <audio id="music" src="assets/musique.wav" preload="auto"></audio>
+
         <!-- Son d'océan -->
         <audio
           id="oceanSnd"
           src="assets/ocean-sound.mp3"
           preload="auto"
         ></audio>
-
-        <!-- 3 sons de batterie (à personnaliser selon vos fichiers) -->
-        <audio id="drumSound1" src="assets/drum1.mp3" preload="auto"></audio>
-        <audio id="drumSound2" src="assets/drum2.mp3" preload="auto"></audio>
-        <audio id="drumSound3" src="assets/drum3.mp3" preload="auto"></audio>
       </a-assets>
 
       <!-- 2) OCÉAN AVEC SON -->
@@ -57,22 +77,23 @@
         sound="src: #oceanSnd; autoplay: true; loop: true; positional: true; volume: 0.6"
       ></a-ocean>
 
-      <!-- 3) PROJECTEURS, OBJETS, ETC. -->
+      <!-- 3) SOL 3D + PLANE -->
       <a-entity
+        id="mySol"
         gltf-model="#sol"
         position="0 -1 10"
         scale="2 2 2"
         rotation="0 90 0"
       ></a-entity>
 
-      <!-- Plan au sol, si besoin -->
       <a-entity
+        id="myFloor"
         geometry="primitive: plane; width: 100; height: 100"
         material="color: #1D2A80"
         rotation="-90 0 0"
       ></a-entity>
 
-      <!-- Batterie (cliquable) -->
+      <!-- 4) BATTERIE + PROJOS -->
       <a-entity
         id="drum"
         gltf-model="#batterieModel"
@@ -80,7 +101,6 @@
         class="clickable"
       ></a-entity>
 
-      <!-- Projecteur 1 + spot + sphère blanche -->
       <a-entity
         id="projecteur1"
         gltf-model="#projecteur"
@@ -96,6 +116,7 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
+
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -104,7 +125,6 @@
         ></a-entity>
       </a-entity>
 
-      <!-- Projecteur 2 + spot + sphère blanche -->
       <a-entity
         id="projecteur2"
         gltf-model="#projecteur"
@@ -120,6 +140,7 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
+
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -128,7 +149,6 @@
         ></a-entity>
       </a-entity>
 
-      <!-- Projecteur 3 + spot + sphère blanche -->
       <a-entity
         id="projecteur3"
         gltf-model="#projecteur"
@@ -144,6 +164,7 @@
           angle="10"
           penumbra="0.1"
         ></a-light>
+
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -159,13 +180,12 @@
         animation="property: rotation; to: 0 -360 0; loop: true; dur: 20000; easing: linear"
       ></a-entity>
 
-      <!-- 4) LE RIG + CAMÉRA + CONTRÔLEURS VR -->
+      <!-- 5) RIG VR + MAINS + BAGUETTES -->
       <a-entity
         id="playerRig"
         movement-controls="speed: 0.1"
         position="0 0.8 0"
       >
-        <!-- Caméra -->
         <a-entity
           id="playerCam"
           camera
@@ -173,22 +193,21 @@
           look-controls="pointerLockEnabled: false"
         ></a-entity>
 
-        <!-- Main gauche (joystick) + baguette -->
+        <!-- Main gauche (joystick) avec baguette -->
         <a-entity
           id="leftHand"
           oculus-touch-controls="hand: left"
           gamepad-controls="hand: left"
         >
-          <!-- Baguette gauche dans la main gauche -->
           <a-entity
             gltf-model="#baguettesModel"
-            position="0 0 -0.3"
-            rotation="-90 0 0"
-            scale="2 2 2"
+            position="0 0 -0.1"
+            rotation="0 180 0"
+            scale="0.5 0.5 0.5"
           ></a-entity>
         </a-entity>
 
-        <!-- Main droite (laser + clic) + baguette -->
+        <!-- Main droite (laser + clic) avec baguette -->
         <a-entity
           id="rightHand"
           oculus-touch-controls="hand: right"
@@ -197,21 +216,24 @@
           raycaster="objects: .clickable, .draggable; showLine: true"
           line="color: white; opacity: 0.8"
         >
-          <!-- Baguette droite dans la main droite -->
           <a-entity
             gltf-model="#baguettesModel"
-            position="0 0 -0.3"
-            rotation="-90 0 0"
-            scale="2 2 2"
+            position="0 0 -0.1"
+            rotation="0 180 0"
+            scale="0.5 0.5 0.5"
           ></a-entity>
         </a-entity>
       </a-entity>
 
-      <!-- 5) Ciel (non affecté par le brouillard) -->
+      <!-- 6) Ciel -->
       <a-sky src="assets/sky.jpg" material="fog: false"></a-sky>
 
-      <!-- 6) Entité pour jouer les sons de drum -->
+      <!-- 7) Entités pour jouer les sons -->
       <a-entity id="drumSound" sound="autoplay: false; volume: 1"></a-entity>
+      <a-entity
+        id="musicSound"
+        sound="src: #music; autoplay: false; loop: true; volume: 0.8"
+      ></a-entity>
     </a-scene>
 
     <!-- SCRIPT PRINCIPAL -->
@@ -220,34 +242,82 @@
         const drumEl = document.getElementById("drum");
         const playerRigEl = document.getElementById("playerRig");
         const drumSoundEl = document.getElementById("drumSound");
+        const musicSoundEl = document.getElementById("musicSound");
+
+        const oceanEl = document.getElementById("ocean");
+        const floorEl = document.getElementById("myFloor");
+        // (Optionnel) Si vous voulez aussi changer la couleur du gltf "sol"
+        // vous pouvez essayer : const solEl = document.getElementById("mySol");
 
         let isSeated = false;
 
-        // Tableau d'IDs audio pour les sons de batterie
-        const drumSounds = ["#drumSound1", "#drumSound2", "#drumSound3"];
+        // Les 4 sons possibles, on pioche au hasard
+        const drumSounds = [
+          "#sound-baguette",
+          "#sound-batterie-grave",
+          "#sound-batterie",
+          "#sound-cymbale",
+        ];
 
-        // Fonction pour jouer un son de batterie aléatoire
+        // Suite de couleurs allant vers le rose
+        // (vous pouvez en ajouter plus ou ajuster les teintes)
+        const colorSteps = [
+          "#182264",
+          "#583064",
+          "#804064",
+          "#B05080",
+          "#D0609C",
+          "#FF69B4", // rose final
+        ];
+        let colorIndex = 0; // On démarre à 0 (couleur initiale)
+
+        /**
+         * Joue un son de batterie choisi aléatoirement
+         */
         function playRandomDrumSound() {
-          const randomIndex = Math.floor(Math.random() * drumSounds.length);
-          const randomSrc = drumSounds[randomIndex];
-          // On met à jour la source du composant 'sound'
-          drumSoundEl.setAttribute("sound", "src", randomSrc);
-          // On arrête le son précédent puis on joue le nouveau
+          const idx = Math.floor(Math.random() * drumSounds.length);
+          const src = drumSounds[idx];
+
+          // Met à jour la source et joue
+          drumSoundEl.setAttribute("sound", "src", src);
           drumSoundEl.components.sound.stopSound();
           drumSoundEl.components.sound.playSound();
         }
 
-        // -- Clic sur la batterie -> toggle assis/debout + jouer un son --
+        /**
+         * Passe à la couleur suivante (jusqu'au rose) pour l'océan et le floor.
+         */
+        function nextColorStep() {
+          // Incrémente l'index
+          if (colorIndex < colorSteps.length - 1) {
+            colorIndex++;
+          }
+          const newColor = colorSteps[colorIndex];
+          // Applique à l'océan
+          oceanEl.setAttribute("material", "color", newColor);
+
+          // Applique au plane (floor)
+          floorEl.setAttribute("material", "color", newColor);
+
+          // Si vous voulez tenter de colorer le gltf "sol", vous pouvez essayer :
+          // solEl.setAttribute("material", "color", newColor);
+          // Mais ça dépend de la structure du gltf (il faut parfois un 'overrideMaterial')
+        }
+
+        // -- Au clic sur la batterie -> jouer un son + s'asseoir/debout + changer couleur
         drumEl.addEventListener("click", () => {
-          // On joue toujours un son de drum
+          // 1) Jouer un son de drum aléatoire
           playRandomDrumSound();
 
-          // Ensuite on gère l'assis/debout
+          // 2) Changer la couleur de l'eau / floor (prochaine étape)
+          nextColorStep();
+
+          // 3) Toggle assis / debout
           if (!isSeated) {
-            // -- S'asseoir --
+            // S'asseoir
             isSeated = true;
 
-            // Animer la position/rotation du RIG
+            // Anim rig
             playerRigEl.setAttribute("animation__rigpos", {
               property: "position",
               to: { x: 0, y: 1, z: -6 },
@@ -262,19 +332,25 @@
               easing: "easeInOutQuad",
               startEvents: "startMove",
             });
-
             playerRigEl.emit("startMove");
+
+            // Lancer la musique d'ambiance
+            musicSoundEl.components.sound.stopSound();
+            musicSoundEl.components.sound.playSound();
           } else {
-            // -- Se relever --
+            // Se relever
             isSeated = false;
 
-            // Stoppe l'animation
+            // Stop animations
             playerRigEl.removeAttribute("animation__rigpos");
             playerRigEl.removeAttribute("animation__rigrot");
 
-            // Remet le rig à sa position/rotation initiale
+            // Position/rotation initiale
             playerRigEl.setAttribute("position", { x: 0, y: 0.8, z: 0 });
             playerRigEl.setAttribute("rotation", { x: 0, y: 0, z: 0 });
+
+            // Couper la musique
+            musicSoundEl.components.sound.stopSound();
           }
         });
       });
