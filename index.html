@@ -55,7 +55,7 @@
         ></audio>
 
         <!-- Musique d’ambiance quand on s’assoit -->
-        <audio id="music" src="assets/pixar.mp3" preload="auto"></audio>
+        <audio id="music" src="assets/musique.wav" preload="auto"></audio>
 
         <!-- Son d'océan -->
         <audio
@@ -116,12 +116,6 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
-        <a-entity
-          geometry="primitive: sphere; radius: 0.25"
-          material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
-          position="0 -0.9 -0.2"
-          light="type: point; color: #FFFFFF; intensity: 2; distance: 1"
-        ></a-entity>
       </a-entity>
 
       <a-entity
@@ -139,12 +133,6 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
-        <a-entity
-          geometry="primitive: sphere; radius: 0.25"
-          material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
-          position="0 -0.9 -0.2"
-          light="type: point; color: #FFFFFF; intensity: 2; distance: 1"
-        ></a-entity>
       </a-entity>
 
       <a-entity
@@ -162,12 +150,6 @@
           angle="10"
           penumbra="0.1"
         ></a-light>
-        <a-entity
-          geometry="primitive: sphere; radius: 0.25"
-          material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
-          position="0 -0.9 -0.2"
-          light="type: point; color: #FFFFFF; intensity: 2; distance: 1"
-        ></a-entity>
       </a-entity>
 
       <!-- Lumière supplémentaire qui tourne -->
@@ -226,14 +208,16 @@
       <a-sky src="assets/sky.jpg" material="fog: false"></a-sky>
 
       <!-- 7) Entités pour jouer les sons -->
-      <!-- Ajout de poolSize: 5 pour autoriser plusieurs sons superposés -->
+      <!-- 4 sons aléatoires = volume plus élevé + superposition possible -->
       <a-entity
         id="drumSound"
-        sound="autoplay: false; volume: 1; poolSize: 5"
+        sound="autoplay: false; poolSize: 5; volume: 2"
       ></a-entity>
+
+      <!-- Musique d’ambiance (on va faire un fade-in progressif) -->
       <a-entity
         id="musicSound"
-        sound="src: #music; autoplay: false; loop: true; volume: 0.8"
+        sound="src: #music; autoplay: false; loop: true; volume: 0.2"
       ></a-entity>
     </a-scene>
 
@@ -249,8 +233,9 @@
         const floorEl = document.getElementById("myFloor");
 
         let isSeated = false;
+        let fadeInterval = null; // Pour le fade-in de la musique
 
-        // 4 sons de percussion
+        // 4 sons de percussion (vol. 2 dans le composant => plus forts)
         const drumSounds = [
           "#sound-baguette",
           "#sound-batterie-grave",
@@ -270,13 +255,11 @@
         let colorIndex = 0;
 
         /**
-         * Jouer un son aléatoire (sans stopper l'ancien).
+         * Jouer un son de batterie aléatoire
          */
         function playRandomDrumSound() {
           const randIndex = Math.floor(Math.random() * drumSounds.length);
-          const chosenSrc = drumSounds[randIndex];
-          drumSoundEl.setAttribute("sound", "src", chosenSrc);
-          // On NE stoppe pas => on superpose
+          drumSoundEl.setAttribute("sound", "src", drumSounds[randIndex]);
           drumSoundEl.components.sound.playSound();
         }
 
@@ -292,13 +275,39 @@
           floorEl.setAttribute("material", "color", newColor);
         }
 
+        /**
+         * Lance un fade-in progressif de la musique
+         * partant du volume actuel (0.2) jusqu'à un max, par ex 1.0
+         * sur une durée (ex. 10s)
+         */
+        function startMusicFadeIn() {
+          // On stoppe tout fade en cours
+          if (fadeInterval) {
+            clearInterval(fadeInterval);
+          }
+          // Sur 10s, on incrémente par pas de 0.08 toutes les 1s
+          // (vous pouvez ajuster la durée et le pas)
+          fadeInterval = setInterval(() => {
+            // Récupère le volume actuel
+            const currentVol = musicSoundEl.getAttribute("sound").volume;
+            let nextVol = currentVol + 0.08;
+
+            // On limite à 1.0
+            if (nextVol >= 1.0) {
+              nextVol = 1.0;
+              clearInterval(fadeInterval);
+            }
+            // Met à jour le volume
+            musicSoundEl.setAttribute("sound", "volume", nextVol);
+          }, 1000);
+        }
+
         // Clic sur la batterie
         drumEl.addEventListener("click", () => {
           if (!isSeated) {
-            // Premier clic => s’asseoir + musique
+            // PREMIER CLIC => s’asseoir + musique
             isSeated = true;
 
-            // Animation rig
             playerRigEl.setAttribute("animation__rigpos", {
               property: "position",
               to: { x: 0, y: 1, z: -6 },
@@ -315,11 +324,16 @@
             });
             playerRigEl.emit("startMove");
 
-            // Musique d’ambiance
+            // (Ré)initialise la musique à volume bas (0.2)
+            musicSoundEl.setAttribute("sound", "volume", 0.2);
+            // Joue la musique
             musicSoundEl.components.sound.stopSound();
             musicSoundEl.components.sound.playSound();
+
+            // Lance la montée progressive du volume
+            startMusicFadeIn();
           } else {
-            // Clics suivants => taper sur la batterie
+            // CLICS SUIVANTS => taper sur la batterie
             playRandomDrumSound();
             nextColorStep();
           }
