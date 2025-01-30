@@ -116,7 +116,6 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
-
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -140,7 +139,6 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
-
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -164,7 +162,6 @@
           angle="10"
           penumbra="0.1"
         ></a-light>
-
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -186,6 +183,7 @@
         movement-controls="speed: 0.1"
         position="0 0.8 0"
       >
+        <!-- Caméra -->
         <a-entity
           id="playerCam"
           camera
@@ -246,12 +244,12 @@
 
         const oceanEl = document.getElementById("ocean");
         const floorEl = document.getElementById("myFloor");
-        // (Optionnel) Si vous voulez aussi changer la couleur du gltf "sol"
-        // vous pouvez essayer : const solEl = document.getElementById("mySol");
+        // Pour colorer éventuellement le sol en GLTF :
+        // const solEl = document.getElementById("mySol");
 
         let isSeated = false;
 
-        // Les 4 sons possibles, on pioche au hasard
+        // 4 sons de percussions (aléatoire)
         const drumSounds = [
           "#sound-baguette",
           "#sound-batterie-grave",
@@ -259,65 +257,49 @@
           "#sound-cymbale",
         ];
 
-        // Suite de couleurs allant vers le rose
-        // (vous pouvez en ajouter plus ou ajuster les teintes)
+        // Couleurs (du bleu vers le rose) pour l'océan et le floor
         const colorSteps = [
-          "#182264",
+          "#182264", // bleu initial
           "#583064",
           "#804064",
           "#B05080",
           "#D0609C",
           "#FF69B4", // rose final
         ];
-        let colorIndex = 0; // On démarre à 0 (couleur initiale)
+        let colorIndex = 0;
 
         /**
-         * Joue un son de batterie choisi aléatoirement
+         * Joue un son de batterie (aléatoire parmi les 4).
          */
         function playRandomDrumSound() {
-          const idx = Math.floor(Math.random() * drumSounds.length);
-          const src = drumSounds[idx];
+          const randomIndex = Math.floor(Math.random() * drumSounds.length);
+          const randomSrc = drumSounds[randomIndex];
+          drumSoundEl.setAttribute("sound", "src", randomSrc);
 
-          // Met à jour la source et joue
-          drumSoundEl.setAttribute("sound", "src", src);
           drumSoundEl.components.sound.stopSound();
           drumSoundEl.components.sound.playSound();
         }
 
         /**
-         * Passe à la couleur suivante (jusqu'au rose) pour l'océan et le floor.
+         * Passe à la couleur suivante, jusqu'au rose, pour l'océan + floor.
          */
         function nextColorStep() {
-          // Incrémente l'index
           if (colorIndex < colorSteps.length - 1) {
             colorIndex++;
           }
           const newColor = colorSteps[colorIndex];
-          // Applique à l'océan
           oceanEl.setAttribute("material", "color", newColor);
-
-          // Applique au plane (floor)
           floorEl.setAttribute("material", "color", newColor);
-
-          // Si vous voulez tenter de colorer le gltf "sol", vous pouvez essayer :
-          // solEl.setAttribute("material", "color", newColor);
-          // Mais ça dépend de la structure du gltf (il faut parfois un 'overrideMaterial')
+          // solEl.setAttribute("material", "color", newColor); // si besoin
         }
 
-        // -- Au clic sur la batterie -> jouer un son + s'asseoir/debout + changer couleur
+        // Clic sur la batterie
         drumEl.addEventListener("click", () => {
-          // 1) Jouer un son de drum aléatoire
-          playRandomDrumSound();
-
-          // 2) Changer la couleur de l'eau / floor (prochaine étape)
-          nextColorStep();
-
-          // 3) Toggle assis / debout
           if (!isSeated) {
-            // S'asseoir
+            // 1) PREMIER CLIC => S'asseoir et lancer la musique
             isSeated = true;
 
-            // Anim rig
+            // Animation pour se rapprocher de la batterie
             playerRigEl.setAttribute("animation__rigpos", {
               property: "position",
               to: { x: 0, y: 1, z: -6 },
@@ -334,23 +316,13 @@
             });
             playerRigEl.emit("startMove");
 
-            // Lancer la musique d'ambiance
+            // Lancer la musique d'ambiance (mais pas de percussion tout de suite)
             musicSoundEl.components.sound.stopSound();
             musicSoundEl.components.sound.playSound();
           } else {
-            // Se relever
-            isSeated = false;
-
-            // Stop animations
-            playerRigEl.removeAttribute("animation__rigpos");
-            playerRigEl.removeAttribute("animation__rigrot");
-
-            // Position/rotation initiale
-            playerRigEl.setAttribute("position", { x: 0, y: 0.8, z: 0 });
-            playerRigEl.setAttribute("rotation", { x: 0, y: 0, z: 0 });
-
-            // Couper la musique
-            musicSoundEl.components.sound.stopSound();
+            // 2) CLICS SUIVANTS => on « tape » sur la batterie
+            playRandomDrumSound();
+            nextColorStep();
           }
         });
       });
