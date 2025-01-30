@@ -116,6 +116,12 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
+        <a-entity
+          geometry="primitive: sphere; radius: 0.25"
+          material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
+          position="0 -0.9 -0.2"
+          light="type: point; color: #FFFFFF; intensity: 2; distance: 1"
+        ></a-entity>
       </a-entity>
 
       <a-entity
@@ -133,6 +139,12 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
+        <a-entity
+          geometry="primitive: sphere; radius: 0.25"
+          material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
+          position="0 -0.9 -0.2"
+          light="type: point; color: #FFFFFF; intensity: 2; distance: 1"
+        ></a-entity>
       </a-entity>
 
       <a-entity
@@ -150,6 +162,12 @@
           angle="10"
           penumbra="0.1"
         ></a-light>
+        <a-entity
+          geometry="primitive: sphere; radius: 0.25"
+          material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
+          position="0 -0.9 -0.2"
+          light="type: point; color: #FFFFFF; intensity: 2; distance: 1"
+        ></a-entity>
       </a-entity>
 
       <!-- Lumière supplémentaire qui tourne -->
@@ -208,12 +226,11 @@
       <a-sky src="assets/sky.jpg" material="fog: false"></a-sky>
 
       <!-- 7) Entités pour jouer les sons -->
-      <!-- Note: poolSize: 5 -> pour ne pas interrompre le son précédent -->
+      <!-- Ajout de poolSize: 5 pour autoriser plusieurs sons superposés -->
       <a-entity
         id="drumSound"
         sound="autoplay: false; volume: 1; poolSize: 5"
       ></a-entity>
-
       <a-entity
         id="musicSound"
         sound="src: #music; autoplay: false; loop: true; volume: 0.8"
@@ -233,7 +250,7 @@
 
         let isSeated = false;
 
-        // 4 sons de percussion (réels)
+        // 4 sons de percussion
         const drumSounds = [
           "#sound-baguette",
           "#sound-batterie-grave",
@@ -241,7 +258,7 @@
           "#sound-cymbale",
         ];
 
-        // Couleurs pour l'océan + floor, du bleu vers le rose
+        // Couleurs pour l'océan et le floor, bleu -> rose
         const colorSteps = [
           "#182264",
           "#583064",
@@ -253,18 +270,18 @@
         let colorIndex = 0;
 
         /**
-         * Joue un son de batterie (aléatoire).
-         * poolSize: 5 => On peut rejouer un nouveau son sans couper l'ancien
+         * Jouer un son aléatoire (sans stopper l'ancien).
          */
         function playRandomDrumSound() {
-          const idx = Math.floor(Math.random() * drumSounds.length);
-          drumSoundEl.setAttribute("sound", "src", drumSounds[idx]);
-          // NE PLUS faire de stopSound() => on laisse se superposer
+          const randIndex = Math.floor(Math.random() * drumSounds.length);
+          const chosenSrc = drumSounds[randIndex];
+          drumSoundEl.setAttribute("sound", "src", chosenSrc);
+          // On NE stoppe pas => on superpose
           drumSoundEl.components.sound.playSound();
         }
 
         /**
-         * Avance la couleur d'une étape, jusqu'au rose
+         * Avancer la couleur d'une étape, jusqu'au rose
          */
         function nextColorStep() {
           if (colorIndex < colorSteps.length - 1) {
@@ -275,14 +292,13 @@
           floorEl.setAttribute("material", "color", newColor);
         }
 
-        // PREMIER CLIC => s’asseoir + musique
-        // CLICS SUIVANTS => taper sur la batterie => son aléatoire + couleur
+        // Clic sur la batterie
         drumEl.addEventListener("click", () => {
           if (!isSeated) {
-            // S'asseoir
+            // Premier clic => s’asseoir + musique
             isSeated = true;
 
-            // Animer le rig
+            // Animation rig
             playerRigEl.setAttribute("animation__rigpos", {
               property: "position",
               to: { x: 0, y: 1, z: -6 },
@@ -303,30 +319,9 @@
             musicSoundEl.components.sound.stopSound();
             musicSoundEl.components.sound.playSound();
           } else {
-            // Taper => son + couleur
+            // Clics suivants => taper sur la batterie
             playRandomDrumSound();
             nextColorStep();
-          }
-        });
-
-        // -- APPUI SUR LE BOUTON A (index === 0) DE LA MANETTE --> sortir si on est assis --
-        const rightHandEl = document.getElementById("rightHand");
-        rightHandEl.addEventListener("gamepadbuttondown", (evt) => {
-          // Sur Quest, A correspond souvent à l'index 0
-          if (evt.detail.index === 0 && isSeated) {
-            // Se relever
-            isSeated = false;
-
-            // Stop animations
-            playerRigEl.removeAttribute("animation__rigpos");
-            playerRigEl.removeAttribute("animation__rigrot");
-
-            // Position/rotation initiale
-            playerRigEl.setAttribute("position", { x: 0, y: 0.8, z: 0 });
-            playerRigEl.setAttribute("rotation", { x: 0, y: 0, z: 0 });
-
-            // Couper la musique
-            musicSoundEl.components.sound.stopSound();
           }
         });
       });
