@@ -116,6 +116,12 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
+        <a-entity
+          geometry="primitive: sphere; radius: 0.25"
+          material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
+          position="0 -0.9 -0.2"
+          light="type: point; color: #FFFFFF; intensity: 2; distance: 1"
+        ></a-entity>
       </a-entity>
 
       <a-entity
@@ -133,6 +139,12 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
+        <a-entity
+          geometry="primitive: sphere; radius: 0.25"
+          material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
+          position="0 -0.9 -0.2"
+          light="type: point; color: #FFFFFF; intensity: 2; distance: 1"
+        ></a-entity>
       </a-entity>
 
       <a-entity
@@ -150,6 +162,12 @@
           angle="10"
           penumbra="0.1"
         ></a-light>
+        <a-entity
+          geometry="primitive: sphere; radius: 0.25"
+          material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
+          position="0 -0.9 -0.2"
+          light="type: point; color: #FFFFFF; intensity: 2; distance: 1"
+        ></a-entity>
       </a-entity>
 
       <!-- Lumière supplémentaire qui tourne -->
@@ -208,16 +226,14 @@
       <a-sky src="assets/sky.jpg" material="fog: false"></a-sky>
 
       <!-- 7) Entités pour jouer les sons -->
-      <!-- 4 sons aléatoires = volume plus élevé + superposition possible -->
+      <!-- Ajout de poolSize: 5 pour autoriser plusieurs sons superposés -->
       <a-entity
         id="drumSound"
-        sound="autoplay: false; poolSize: 10; volume: 6"
+        sound="autoplay: false; volume: 1; poolSize: 5"
       ></a-entity>
-
-      <!-- Musique d’ambiance (on va faire un fade-in progressif) -->
       <a-entity
         id="musicSound"
-        sound="src: #music; autoplay: false; loop: true; volume: 0.2"
+        sound="src: #music; autoplay: false; loop: true; volume: 0.8"
       ></a-entity>
     </a-scene>
 
@@ -299,7 +315,7 @@
             }
             // Met à jour le volume
             musicSoundEl.setAttribute("sound", "volume", nextVol);
-          }, 10000);
+          }, 1000);
         }
 
         // Clic sur la batterie
