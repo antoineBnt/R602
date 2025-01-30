@@ -32,7 +32,7 @@
         ></a-asset-item>
         <a-asset-item id="sol" src="assets/sol.glb"></a-asset-item>
 
-        <!-- Sons de percussions -->
+        <!-- 4 sons de batterie -->
         <audio
           id="sound-baguette"
           src="assets/Baguette.wav"
@@ -183,7 +183,6 @@
         movement-controls="speed: 0.1"
         position="0 0.8 0"
       >
-        <!-- Caméra -->
         <a-entity
           id="playerCam"
           camera
@@ -227,6 +226,7 @@
       <a-sky src="assets/sky.jpg" material="fog: false"></a-sky>
 
       <!-- 7) Entités pour jouer les sons -->
+      <!-- 4 sons aléatoires = "drumSound" + ambiance "musicSound" -->
       <a-entity id="drumSound" sound="autoplay: false; volume: 1"></a-entity>
       <a-entity
         id="musicSound"
@@ -244,12 +244,12 @@
 
         const oceanEl = document.getElementById("ocean");
         const floorEl = document.getElementById("myFloor");
-        // Pour colorer éventuellement le sol en GLTF :
+        // Pour colorer éventuellement le sol gltf :
         // const solEl = document.getElementById("mySol");
 
         let isSeated = false;
 
-        // 4 sons de percussions (aléatoire)
+        // 4 sons de percussion (réels) :
         const drumSounds = [
           "#sound-baguette",
           "#sound-batterie-grave",
@@ -257,31 +257,29 @@
           "#sound-cymbale",
         ];
 
-        // Couleurs (du bleu vers le rose) pour l'océan et le floor
+        // Couleurs pour l'océan et le floor, du bleu vers le rose
         const colorSteps = [
-          "#182264", // bleu initial
+          "#182264",
           "#583064",
           "#804064",
           "#B05080",
           "#D0609C",
-          "#FF69B4", // rose final
+          "#FF69B4",
         ];
         let colorIndex = 0;
 
         /**
-         * Joue un son de batterie (aléatoire parmi les 4).
+         * Jouer un son aléatoire parmi les 4.
          */
         function playRandomDrumSound() {
           const randomIndex = Math.floor(Math.random() * drumSounds.length);
-          const randomSrc = drumSounds[randomIndex];
-          drumSoundEl.setAttribute("sound", "src", randomSrc);
-
+          drumSoundEl.setAttribute("sound", "src", drumSounds[randomIndex]);
           drumSoundEl.components.sound.stopSound();
           drumSoundEl.components.sound.playSound();
         }
 
         /**
-         * Passe à la couleur suivante, jusqu'au rose, pour l'océan + floor.
+         * Incrémenter la couleur jusqu’au rose
          */
         function nextColorStep() {
           if (colorIndex < colorSteps.length - 1) {
@@ -296,10 +294,9 @@
         // Clic sur la batterie
         drumEl.addEventListener("click", () => {
           if (!isSeated) {
-            // 1) PREMIER CLIC => S'asseoir et lancer la musique
+            // 1) PREMIER CLIC => Asseoir et lancer la musique
             isSeated = true;
 
-            // Animation pour se rapprocher de la batterie
             playerRigEl.setAttribute("animation__rigpos", {
               property: "position",
               to: { x: 0, y: 1, z: -6 },
@@ -316,11 +313,11 @@
             });
             playerRigEl.emit("startMove");
 
-            // Lancer la musique d'ambiance (mais pas de percussion tout de suite)
+            // Lancer la musique d’ambiance
             musicSoundEl.components.sound.stopSound();
             musicSoundEl.components.sound.playSound();
           } else {
-            // 2) CLICS SUIVANTS => on « tape » sur la batterie
+            // 2) CLICS SUIVANTS => taper sur la batterie
             playRandomDrumSound();
             nextColorStep();
           }
