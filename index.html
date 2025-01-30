@@ -293,13 +293,13 @@
             let nextVol = currentVol + 0.08;
 
             // On limite à 1.0
-            if (nextVol >= 1.0) {
-              nextVol = 1.0;
+            if (nextVol >= 7.0) {
+              nextVol = 7.0;
               clearInterval(fadeInterval);
             }
             // Met à jour le volume
             musicSoundEl.setAttribute("sound", "volume", nextVol);
-          }, 1000);
+          }, 10000);
         }
 
         // Clic sur la batterie
