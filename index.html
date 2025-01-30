@@ -231,56 +231,72 @@
         const drumSoundEl = document.getElementById("drumSound");
         const musicSoundEl = document.getElementById("musicSound");
 
-        // Océan + sol pour changer de couleur progressivement
         const oceanEl = document.getElementById("ocean");
         const floorEl = document.getElementById("myFloor");
+        // (Optionnel) Si vous voulez aussi changer la couleur du gltf "sol"
+        // vous pouvez essayer : const solEl = document.getElementById("mySol");
 
-        // Gère l’état assis/debout
         let isSeated = false;
 
-        // 3 sons de batterie
-        const drumSounds = ["#drumSound1", "#drumSound2", "#drumSound3"];
-
-        // Tableau de couleurs pour l’océan/le sol, allant du bleu au rose
-        const colorSteps = [
-          "#182264", // bleu foncé initial
-          "#584068",
-          "#8A5088",
-          "#B060A0",
-          "#D070B0",
-          "#FF80CA", // rose final
+        // Les 4 sons possibles, on pioche au hasard
+        const drumSounds = [
+          "#sound-baguette",
+          "#sound-batterie-grave",
+          "#sound-batterie",
+          "#sound-cymbale",
         ];
-        let colorIndex = 0;
+
+        // Suite de couleurs allant vers le rose
+        // (vous pouvez en ajouter plus ou ajuster les teintes)
+        const colorSteps = [
+          "#182264",
+          "#583064",
+          "#804064",
+          "#B05080",
+          "#D0609C",
+          "#FF69B4", // rose final
+        ];
+        let colorIndex = 0; // On démarre à 0 (couleur initiale)
 
         /**
-         * Joue un son de batterie choisi aléatoirement.
+         * Joue un son de batterie choisi aléatoirement
          */
         function playRandomDrumSound() {
-          const randomIndex = Math.floor(Math.random() * drumSounds.length);
-          const randomSrc = drumSounds[randomIndex];
-          drumSoundEl.setAttribute("sound", "src", randomSrc);
+          const idx = Math.floor(Math.random() * drumSounds.length);
+          const src = drumSounds[idx];
+
+          // Met à jour la source et joue
+          drumSoundEl.setAttribute("sound", "src", src);
           drumSoundEl.components.sound.stopSound();
           drumSoundEl.components.sound.playSound();
         }
 
         /**
-         * Passe la couleur de l'océan/sol à l’étape suivante (jusqu’au rose).
+         * Passe à la couleur suivante (jusqu'au rose) pour l'océan et le floor.
          */
         function nextColorStep() {
+          // Incrémente l'index
           if (colorIndex < colorSteps.length - 1) {
             colorIndex++;
           }
           const newColor = colorSteps[colorIndex];
+          // Applique à l'océan
           oceanEl.setAttribute("material", "color", newColor);
+
+          // Applique au plane (floor)
           floorEl.setAttribute("material", "color", newColor);
+
+          // Si vous voulez tenter de colorer le gltf "sol", vous pouvez essayer :
+          // solEl.setAttribute("material", "color", newColor);
+          // Mais ça dépend de la structure du gltf (il faut parfois un 'overrideMaterial')
         }
 
-        // -- Au clic sur la batterie -> jouer un son + toggle assis/debout + changer couleur
+        // -- Au clic sur la batterie -> jouer un son + s'asseoir/debout + changer couleur
         drumEl.addEventListener("click", () => {
-          // 1) Jouer un son aléatoire
+          // 1) Jouer un son de drum aléatoire
           playRandomDrumSound();
 
-          // 2) Changer la couleur (étape suivante)
+          // 2) Changer la couleur de l'eau / floor (prochaine étape)
           nextColorStep();
 
           // 3) Toggle assis / debout
@@ -288,7 +304,7 @@
             // S'asseoir
             isSeated = true;
 
-            // Animation du rig (positions à ajuster si besoin)
+            // Anim rig
             playerRigEl.setAttribute("animation__rigpos", {
               property: "position",
               to: { x: 0, y: 1, z: -6 },
@@ -312,11 +328,11 @@
             // Se relever
             isSeated = false;
 
-            // Stopper l'anim
+            // Stop animations
             playerRigEl.removeAttribute("animation__rigpos");
             playerRigEl.removeAttribute("animation__rigrot");
 
-            // Revenir à la position/rotation initiale
+            // Position/rotation initiale
             playerRigEl.setAttribute("position", { x: 0, y: 0.8, z: 0 });
             playerRigEl.setAttribute("rotation", { x: 0, y: 0, z: 0 });
 
