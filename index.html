@@ -32,37 +32,20 @@
         ></a-asset-item>
         <a-asset-item id="sol" src="assets/sol.glb"></a-asset-item>
 
-        <!-- Sons de percussions -->
-        <audio
-          id="sound-baguette"
-          src="assets/Baguette.wav"
-          preload="auto"
-        ></audio>
-        <audio
-          id="sound-batterie-grave"
-          src="assets/batterie-grave.wav"
-          preload="auto"
-        ></audio>
-        <audio
-          id="sound-batterie"
-          src="assets/batterie.wav"
-          preload="auto"
-        ></audio>
-        <audio
-          id="sound-cymbale"
-          src="assets/cymbale.wav"
-          preload="auto"
-        ></audio>
-
-        <!-- Musique d’ambiance quand on s’assoit -->
-        <audio id="music" src="assets/musique.wav" preload="auto"></audio>
-
         <!-- Son d'océan -->
         <audio
           id="oceanSnd"
           src="assets/ocean-sound.mp3"
           preload="auto"
         ></audio>
+
+        <!-- 3 sons de batterie -->
+        <audio id="drumSound1" src="assets/drum1.mp3" preload="auto"></audio>
+        <audio id="drumSound2" src="assets/drum2.mp3" preload="auto"></audio>
+        <audio id="drumSound3" src="assets/drum3.mp3" preload="auto"></audio>
+
+        <!-- Musique d'ambiance -->
+        <audio id="music" src="assets/music.wav" preload="auto"></audio>
       </a-assets>
 
       <!-- 2) OCÉAN AVEC SON -->
@@ -77,7 +60,7 @@
         sound="src: #oceanSnd; autoplay: true; loop: true; positional: true; volume: 0.6"
       ></a-ocean>
 
-      <!-- 3) SOL 3D + PLANE -->
+      <!-- 3) SOL 3D -->
       <a-entity
         id="mySol"
         gltf-model="#sol"
@@ -86,6 +69,7 @@
         rotation="0 90 0"
       ></a-entity>
 
+      <!-- Plan au sol -->
       <a-entity
         id="myFloor"
         geometry="primitive: plane; width: 100; height: 100"
@@ -93,7 +77,7 @@
         rotation="-90 0 0"
       ></a-entity>
 
-      <!-- 4) BATTERIE + PROJOS -->
+      <!-- Batterie (cliquable) -->
       <a-entity
         id="drum"
         gltf-model="#batterieModel"
@@ -101,6 +85,7 @@
         class="clickable"
       ></a-entity>
 
+      <!-- Projecteur 1 + spot + sphère blanche -->
       <a-entity
         id="projecteur1"
         gltf-model="#projecteur"
@@ -116,7 +101,6 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
-
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -125,6 +109,7 @@
         ></a-entity>
       </a-entity>
 
+      <!-- Projecteur 2 + spot + sphère blanche -->
       <a-entity
         id="projecteur2"
         gltf-model="#projecteur"
@@ -140,7 +125,6 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
-
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -149,6 +133,7 @@
         ></a-entity>
       </a-entity>
 
+      <!-- Projecteur 3 + spot + sphère blanche -->
       <a-entity
         id="projecteur3"
         gltf-model="#projecteur"
@@ -164,7 +149,6 @@
           angle="10"
           penumbra="0.1"
         ></a-light>
-
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -180,12 +164,13 @@
         animation="property: rotation; to: 0 -360 0; loop: true; dur: 20000; easing: linear"
       ></a-entity>
 
-      <!-- 5) RIG VR + MAINS + BAGUETTES -->
+      <!-- 4) RIG VR + MAINS + BAGUETTES -->
       <a-entity
         id="playerRig"
         movement-controls="speed: 0.1"
         position="0 0.8 0"
       >
+        <!-- Caméra -->
         <a-entity
           id="playerCam"
           camera
@@ -199,11 +184,12 @@
           oculus-touch-controls="hand: left"
           gamepad-controls="hand: left"
         >
+          <!-- Baguette gauche dans la main gauche (vos modifs) -->
           <a-entity
             gltf-model="#baguettesModel"
-            position="0 0 -0.1"
-            rotation="0 180 0"
-            scale="0.5 0.5 0.5"
+            position="0 0 -0.3"
+            rotation="-90 0 0"
+            scale="2 2 2"
           ></a-entity>
         </a-entity>
 
@@ -218,18 +204,19 @@
         >
           <a-entity
             gltf-model="#baguettesModel"
-            position="0 0 -0.1"
-            rotation="0 180 0"
-            scale="0.5 0.5 0.5"
+            position="0 0 -0.3"
+            rotation="-90 0 0"
+            scale="2 2 2"
           ></a-entity>
         </a-entity>
       </a-entity>
 
-      <!-- 6) Ciel -->
+      <!-- 5) Ciel -->
       <a-sky src="assets/sky.jpg" material="fog: false"></a-sky>
 
-      <!-- 7) Entités pour jouer les sons -->
+      <!-- 6) Entité pour jouer les sons de drum -->
       <a-entity id="drumSound" sound="autoplay: false; volume: 1"></a-entity>
+      <!-- Entité pour la musique d’ambiance -->
       <a-entity
         id="musicSound"
         sound="src: #music; autoplay: false; loop: true; volume: 0.8"
@@ -244,72 +231,56 @@
         const drumSoundEl = document.getElementById("drumSound");
         const musicSoundEl = document.getElementById("musicSound");
 
+        // Océan + sol pour changer de couleur progressivement
         const oceanEl = document.getElementById("ocean");
         const floorEl = document.getElementById("myFloor");
-        // (Optionnel) Si vous voulez aussi changer la couleur du gltf "sol"
-        // vous pouvez essayer : const solEl = document.getElementById("mySol");
 
+        // Gère l’état assis/debout
         let isSeated = false;
 
-        // Les 4 sons possibles, on pioche au hasard
-        const drumSounds = [
-          "#sound-baguette",
-          "#sound-batterie-grave",
-          "#sound-batterie",
-          "#sound-cymbale",
-        ];
+        // 3 sons de batterie
+        const drumSounds = ["#drumSound1", "#drumSound2", "#drumSound3"];
 
-        // Suite de couleurs allant vers le rose
-        // (vous pouvez en ajouter plus ou ajuster les teintes)
+        // Tableau de couleurs pour l’océan/le sol, allant du bleu au rose
         const colorSteps = [
-          "#182264",
-          "#583064",
-          "#804064",
-          "#B05080",
-          "#D0609C",
-          "#FF69B4", // rose final
+          "#182264", // bleu foncé initial
+          "#584068",
+          "#8A5088",
+          "#B060A0",
+          "#D070B0",
+          "#FF80CA", // rose final
         ];
-        let colorIndex = 0; // On démarre à 0 (couleur initiale)
+        let colorIndex = 0;
 
         /**
-         * Joue un son de batterie choisi aléatoirement
+         * Joue un son de batterie choisi aléatoirement.
          */
         function playRandomDrumSound() {
-          const idx = Math.floor(Math.random() * drumSounds.length);
-          const src = drumSounds[idx];
-
-          // Met à jour la source et joue
-          drumSoundEl.setAttribute("sound", "src", src);
+          const randomIndex = Math.floor(Math.random() * drumSounds.length);
+          const randomSrc = drumSounds[randomIndex];
+          drumSoundEl.setAttribute("sound", "src", randomSrc);
           drumSoundEl.components.sound.stopSound();
           drumSoundEl.components.sound.playSound();
         }
 
         /**
-         * Passe à la couleur suivante (jusqu'au rose) pour l'océan et le floor.
+         * Passe la couleur de l'océan/sol à l’étape suivante (jusqu’au rose).
          */
         function nextColorStep() {
-          // Incrémente l'index
           if (colorIndex < colorSteps.length - 1) {
             colorIndex++;
           }
           const newColor = colorSteps[colorIndex];
-          // Applique à l'océan
           oceanEl.setAttribute("material", "color", newColor);
-
-          // Applique au plane (floor)
           floorEl.setAttribute("material", "color", newColor);
-
-          // Si vous voulez tenter de colorer le gltf "sol", vous pouvez essayer :
-          // solEl.setAttribute("material", "color", newColor);
-          // Mais ça dépend de la structure du gltf (il faut parfois un 'overrideMaterial')
         }
 
-        // -- Au clic sur la batterie -> jouer un son + s'asseoir/debout + changer couleur
+        // -- Au clic sur la batterie -> jouer un son + toggle assis/debout + changer couleur
         drumEl.addEventListener("click", () => {
-          // 1) Jouer un son de drum aléatoire
+          // 1) Jouer un son aléatoire
           playRandomDrumSound();
 
-          // 2) Changer la couleur de l'eau / floor (prochaine étape)
+          // 2) Changer la couleur (étape suivante)
           nextColorStep();
 
           // 3) Toggle assis / debout
@@ -317,7 +288,7 @@
             // S'asseoir
             isSeated = true;
 
-            // Anim rig
+            // Animation du rig (positions à ajuster si besoin)
             playerRigEl.setAttribute("animation__rigpos", {
               property: "position",
               to: { x: 0, y: 1, z: -6 },
@@ -341,11 +312,11 @@
             // Se relever
             isSeated = false;
 
-            // Stop animations
+            // Stopper l'anim
             playerRigEl.removeAttribute("animation__rigpos");
             playerRigEl.removeAttribute("animation__rigrot");
 
-            // Position/rotation initiale
+            // Revenir à la position/rotation initiale
             playerRigEl.setAttribute("position", { x: 0, y: 0.8, z: 0 });
             playerRigEl.setAttribute("rotation", { x: 0, y: 0, z: 0 });
 
