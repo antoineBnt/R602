@@ -32,20 +32,37 @@
         ></a-asset-item>
         <a-asset-item id="sol" src="assets/sol.glb"></a-asset-item>
 
+        <!-- Sons de percussions -->
+        <audio
+          id="sound-baguette"
+          src="assets/Baguette.wav"
+          preload="auto"
+        ></audio>
+        <audio
+          id="sound-batterie-grave"
+          src="assets/batterie-grave.wav"
+          preload="auto"
+        ></audio>
+        <audio
+          id="sound-batterie"
+          src="assets/batterie.wav"
+          preload="auto"
+        ></audio>
+        <audio
+          id="sound-cymbale"
+          src="assets/cymbale.wav"
+          preload="auto"
+        ></audio>
+
+        <!-- Musique d’ambiance quand on s’assoit -->
+        <audio id="music" src="assets/musique.wav" preload="auto"></audio>
+
         <!-- Son d'océan -->
         <audio
           id="oceanSnd"
           src="assets/ocean-sound.mp3"
           preload="auto"
         ></audio>
-
-        <!-- 3 sons de batterie -->
-        <audio id="drumSound1" src="assets/drum1.mp3" preload="auto"></audio>
-        <audio id="drumSound2" src="assets/drum2.mp3" preload="auto"></audio>
-        <audio id="drumSound3" src="assets/drum3.mp3" preload="auto"></audio>
-
-        <!-- Musique d'ambiance -->
-        <audio id="music" src="assets/music.wav" preload="auto"></audio>
       </a-assets>
 
       <!-- 2) OCÉAN AVEC SON -->
@@ -60,7 +77,7 @@
         sound="src: #oceanSnd; autoplay: true; loop: true; positional: true; volume: 0.6"
       ></a-ocean>
 
-      <!-- 3) SOL 3D -->
+      <!-- 3) SOL 3D + PLANE -->
       <a-entity
         id="mySol"
         gltf-model="#sol"
@@ -69,7 +86,6 @@
         rotation="0 90 0"
       ></a-entity>
 
-      <!-- Plan au sol -->
       <a-entity
         id="myFloor"
         geometry="primitive: plane; width: 100; height: 100"
@@ -77,7 +93,7 @@
         rotation="-90 0 0"
       ></a-entity>
 
-      <!-- Batterie (cliquable) -->
+      <!-- 4) BATTERIE + PROJOS -->
       <a-entity
         id="drum"
         gltf-model="#batterieModel"
@@ -85,7 +101,6 @@
         class="clickable"
       ></a-entity>
 
-      <!-- Projecteur 1 + spot + sphère blanche -->
       <a-entity
         id="projecteur1"
         gltf-model="#projecteur"
@@ -101,6 +116,7 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
+
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -109,7 +125,6 @@
         ></a-entity>
       </a-entity>
 
-      <!-- Projecteur 2 + spot + sphère blanche -->
       <a-entity
         id="projecteur2"
         gltf-model="#projecteur"
@@ -125,6 +140,7 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
+
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -133,7 +149,6 @@
         ></a-entity>
       </a-entity>
 
-      <!-- Projecteur 3 + spot + sphère blanche -->
       <a-entity
         id="projecteur3"
         gltf-model="#projecteur"
@@ -149,6 +164,7 @@
           angle="10"
           penumbra="0.1"
         ></a-light>
+
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -164,13 +180,12 @@
         animation="property: rotation; to: 0 -360 0; loop: true; dur: 20000; easing: linear"
       ></a-entity>
 
-      <!-- 4) RIG VR + MAINS + BAGUETTES -->
+      <!-- 5) RIG VR + MAINS + BAGUETTES -->
       <a-entity
         id="playerRig"
         movement-controls="speed: 0.1"
         position="0 0.8 0"
       >
-        <!-- Caméra -->
         <a-entity
           id="playerCam"
           camera
@@ -184,7 +199,6 @@
           oculus-touch-controls="hand: left"
           gamepad-controls="hand: left"
         >
-          <!-- Baguette gauche dans la main gauche (vos modifs) -->
           <a-entity
             gltf-model="#baguettesModel"
             position="0 0 -0.3"
@@ -211,12 +225,11 @@
         </a-entity>
       </a-entity>
 
-      <!-- 5) Ciel -->
+      <!-- 6) Ciel -->
       <a-sky src="assets/sky.jpg" material="fog: false"></a-sky>
 
-      <!-- 6) Entité pour jouer les sons de drum -->
+      <!-- 7) Entités pour jouer les sons -->
       <a-entity id="drumSound" sound="autoplay: false; volume: 1"></a-entity>
-      <!-- Entité pour la musique d’ambiance -->
       <a-entity
         id="musicSound"
         sound="src: #music; autoplay: false; loop: true; volume: 0.8"
