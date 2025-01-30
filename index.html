@@ -55,7 +55,7 @@
         ></audio>
 
         <!-- Musique d’ambiance quand on s’assoit -->
-        <audio id="music" src="assets/musique.wav" preload="auto"></audio>
+        <audio id="music" src="assets/pixar.mp3" preload="auto"></audio>
 
         <!-- Son d'océan -->
         <audio
@@ -93,7 +93,7 @@
         rotation="-90 0 0"
       ></a-entity>
 
-      <!-- 4) BATTERIE + PROJOS -->
+      <!-- 4) BATTERIE (cliquable) + PROJOS -->
       <a-entity
         id="drum"
         gltf-model="#batterieModel"
@@ -116,12 +116,6 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
-        <a-entity
-          geometry="primitive: sphere; radius: 0.25"
-          material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
-          position="0 -0.9 -0.2"
-          light="type: point; color: #FFFFFF; intensity: 2; distance: 1"
-        ></a-entity>
       </a-entity>
 
       <a-entity
@@ -139,12 +133,6 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
-        <a-entity
-          geometry="primitive: sphere; radius: 0.25"
-          material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
-          position="0 -0.9 -0.2"
-          light="type: point; color: #FFFFFF; intensity: 2; distance: 1"
-        ></a-entity>
       </a-entity>
 
       <a-entity
@@ -162,12 +150,6 @@
           angle="10"
           penumbra="0.1"
         ></a-light>
-        <a-entity
-          geometry="primitive: sphere; radius: 0.25"
-          material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
-          position="0 -0.9 -0.2"
-          light="type: point; color: #FFFFFF; intensity: 2; distance: 1"
-        ></a-entity>
       </a-entity>
 
       <!-- Lumière supplémentaire qui tourne -->
@@ -222,12 +204,16 @@
         </a-entity>
       </a-entity>
 
-      <!-- 6) Ciel -->
+      <!-- 6) Ciel (non affecté par le brouillard) -->
       <a-sky src="assets/sky.jpg" material="fog: false"></a-sky>
 
       <!-- 7) Entités pour jouer les sons -->
-      <!-- 4 sons aléatoires = "drumSound" + ambiance "musicSound" -->
-      <a-entity id="drumSound" sound="autoplay: false; volume: 1"></a-entity>
+      <!-- Note: poolSize: 5 -> pour ne pas interrompre le son précédent -->
+      <a-entity
+        id="drumSound"
+        sound="autoplay: false; volume: 1; poolSize: 5"
+      ></a-entity>
+
       <a-entity
         id="musicSound"
         sound="src: #music; autoplay: false; loop: true; volume: 0.8"
@@ -244,12 +230,10 @@
 
         const oceanEl = document.getElementById("ocean");
         const floorEl = document.getElementById("myFloor");
-        // Pour colorer éventuellement le sol gltf :
-        // const solEl = document.getElementById("mySol");
 
         let isSeated = false;
 
-        // 4 sons de percussion (réels) :
+        // 4 sons de percussion (réels)
         const drumSounds = [
           "#sound-baguette",
           "#sound-batterie-grave",
@@ -257,7 +241,7 @@
           "#sound-cymbale",
         ];
 
-        // Couleurs pour l'océan et le floor, du bleu vers le rose
+        // Couleurs pour l'océan + floor, du bleu vers le rose
         const colorSteps = [
           "#182264",
           "#583064",
@@ -269,17 +253,18 @@
         let colorIndex = 0;
 
         /**
-         * Jouer un son aléatoire parmi les 4.
+         * Joue un son de batterie (aléatoire).
+         * poolSize: 5 => On peut rejouer un nouveau son sans couper l'ancien
          */
         function playRandomDrumSound() {
-          const randomIndex = Math.floor(Math.random() * drumSounds.length);
-          drumSoundEl.setAttribute("sound", "src", drumSounds[randomIndex]);
-          drumSoundEl.components.sound.stopSound();
+          const idx = Math.floor(Math.random() * drumSounds.length);
+          drumSoundEl.setAttribute("sound", "src", drumSounds[idx]);
+          // NE PLUS faire de stopSound() => on laisse se superposer
           drumSoundEl.components.sound.playSound();
         }
 
         /**
-         * Incrémenter la couleur jusqu’au rose
+         * Avance la couleur d'une étape, jusqu'au rose
          */
         function nextColorStep() {
           if (colorIndex < colorSteps.length - 1) {
@@ -288,15 +273,16 @@
           const newColor = colorSteps[colorIndex];
           oceanEl.setAttribute("material", "color", newColor);
           floorEl.setAttribute("material", "color", newColor);
-          // solEl.setAttribute("material", "color", newColor); // si besoin
         }
 
-        // Clic sur la batterie
+        // PREMIER CLIC => s’asseoir + musique
+        // CLICS SUIVANTS => taper sur la batterie => son aléatoire + couleur
         drumEl.addEventListener("click", () => {
           if (!isSeated) {
-            // 1) PREMIER CLIC => Asseoir et lancer la musique
+            // S'asseoir
             isSeated = true;
 
+            // Animer le rig
             playerRigEl.setAttribute("animation__rigpos", {
               property: "position",
               to: { x: 0, y: 1, z: -6 },
@@ -313,13 +299,34 @@
             });
             playerRigEl.emit("startMove");
 
-            // Lancer la musique d’ambiance
+            // Musique d’ambiance
             musicSoundEl.components.sound.stopSound();
             musicSoundEl.components.sound.playSound();
           } else {
-            // 2) CLICS SUIVANTS => taper sur la batterie
+            // Taper => son + couleur
             playRandomDrumSound();
             nextColorStep();
+          }
+        });
+
+        // -- APPUI SUR LE BOUTON A (index === 0) DE LA MANETTE --> sortir si on est assis --
+        const rightHandEl = document.getElementById("rightHand");
+        rightHandEl.addEventListener("gamepadbuttondown", (evt) => {
+          // Sur Quest, A correspond souvent à l'index 0
+          if (evt.detail.index === 0 && isSeated) {
+            // Se relever
+            isSeated = false;
+
+            // Stop animations
+            playerRigEl.removeAttribute("animation__rigpos");
+            playerRigEl.removeAttribute("animation__rigrot");
+
+            // Position/rotation initiale
+            playerRigEl.setAttribute("position", { x: 0, y: 0.8, z: 0 });
+            playerRigEl.setAttribute("rotation", { x: 0, y: 0, z: 0 });
+
+            // Couper la musique
+            musicSoundEl.components.sound.stopSound();
           }
         });
       });
