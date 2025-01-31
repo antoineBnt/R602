@@ -7,8 +7,11 @@
     <!-- A-Frame principal -->
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 
-    <!-- A-Frame Extras (movement-controls, dragndrop, gamepad, etc.) -->
+    <!-- A-Frame Extras (pour movement-controls, etc.) -->
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.4/dist/aframe-extras.min.js"></script>
+
+    <!-- Plugin pour arrondir les panneaux (rounded-plane) -->
+    <script src="https://unpkg.com/aframe-rounded-plane@1.0.0/dist/aframe-rounded-plane.min.js"></script>
   </head>
   <body>
     <a-scene
@@ -101,7 +104,7 @@
         class="clickable"
       ></a-entity>
 
-      <!-- Projecteur 1 -->
+      <!-- Projecteur 1 + sphère -->
       <a-entity
         id="projecteur1"
         gltf-model="#projecteur"
@@ -117,7 +120,6 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
-        <!-- Sphère lumineuse -->
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -126,7 +128,7 @@
         ></a-entity>
       </a-entity>
 
-      <!-- Projecteur 2 -->
+      <!-- Projecteur 2 + sphère -->
       <a-entity
         id="projecteur2"
         gltf-model="#projecteur"
@@ -142,7 +144,6 @@
           angle="30"
           penumbra="0.5"
         ></a-light>
-        <!-- Sphère lumineuse -->
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -151,7 +152,7 @@
         ></a-entity>
       </a-entity>
 
-      <!-- Projecteur 3 -->
+      <!-- Projecteur 3 + sphère -->
       <a-entity
         id="projecteur3"
         gltf-model="#projecteur"
@@ -167,7 +168,6 @@
           angle="10"
           penumbra="0.1"
         ></a-light>
-        <!-- Sphère lumineuse -->
         <a-entity
           geometry="primitive: sphere; radius: 0.25"
           material="color: white; emissive: white; emissiveIntensity: 1; opacity: 0.8"
@@ -196,12 +196,13 @@
           look-controls="pointerLockEnabled: false"
         ></a-entity>
 
-        <!-- Main gauche (joystick) avec baguette -->
+        <!-- Main gauche (joystick) -->
         <a-entity
           id="leftHand"
           oculus-touch-controls="hand: left"
           gamepad-controls="hand: left"
         >
+          <!-- Baguette gauche -->
           <a-entity
             gltf-model="#baguettesModel"
             position="0 0 -0.3"
@@ -210,7 +211,7 @@
           ></a-entity>
         </a-entity>
 
-        <!-- Main droite (laser + clic) avec baguette -->
+        <!-- Main droite (laser + clic) -->
         <a-entity
           id="rightHand"
           oculus-touch-controls="hand: right"
@@ -219,6 +220,7 @@
           raycaster="objects: .clickable, .draggable; showLine: true"
           line="color: white; opacity: 0.8"
         >
+          <!-- Baguette droite -->
           <a-entity
             gltf-model="#baguettesModel"
             position="0 0 -0.3"
@@ -232,17 +234,34 @@
       <a-sky src="assets/sky.jpg" material="fog: false"></a-sky>
 
       <!-- 7) Entités pour jouer les sons -->
-      <!-- 4 sons aléatoires = volume plus élevé + superposition possible -->
       <a-entity
         id="drumSound"
         sound="autoplay: false; poolSize: 5; volume: 7"
       ></a-entity>
 
-      <!-- Musique d’ambiance (on va faire un fade-in progressif) -->
       <a-entity
         id="musicSound"
         sound="src: #music; autoplay: false; loop: true; volume: 0.2"
       ></a-entity>
+
+      <!-- (NOUVEAU) 8) Panneau d'information arrondi devant la caméra -->
+      <a-entity
+        id="infoPanel"
+        position="0 1.6 -2"
+        geometry="primitive: rounded-rect; width: 1.2; height: 0.5; borderRadius: 0.1"
+        material="color: #222; opacity: 0.8"
+        visible="true"
+      >
+        <a-entity
+          text="
+            value: Bienvenue dans VR Whiplash !\n\nCliquez sur la batterie pour commencer,\npuis frappez-la pour changer la couleur.
+            wrapCount: 26;
+            align: center;
+            color: #EEE;
+          "
+          position="0 0 0.01"
+        ></a-entity>
+      </a-entity>
     </a-scene>
 
     <!-- SCRIPT PRINCIPAL -->
@@ -255,11 +274,12 @@
 
         const oceanEl = document.getElementById("ocean");
         const floorEl = document.getElementById("myFloor");
+        const infoPanelEl = document.getElementById("infoPanel");
 
         let isSeated = false;
-        let fadeInterval = null; // Pour le fade-in de la musique
+        let fadeInterval = null;
 
-        // 4 sons de percussion (vol. 2 => plus forts)
+        // 4 sons de percussion
         const drumSounds = [
           "#sound-baguette",
           "#sound-batterie-grave",
@@ -267,7 +287,7 @@
           "#sound-cymbale",
         ];
 
-        // Couleurs pour l'océan et le floor, bleu -> rose
+        // Couleurs pour l'océan/le sol, plus d'étapes du bleu au rose
         const colorSteps = [
           "#182264",
           "#1C2369",
@@ -289,12 +309,12 @@
           "#E465AA",
           "#EC68B1",
           "#F46BB8",
-          "#FF69B4", // Rose final
+          "#FF69B4",
         ];
         let colorIndex = 0;
 
         /**
-         * Jouer un son de batterie aléatoire (volume=2, poolSize=5 => superposition)
+         * Jouer un son de batterie aléatoire
          */
         function playRandomDrumSound() {
           const randIndex = Math.floor(Math.random() * drumSounds.length);
@@ -304,7 +324,7 @@
         }
 
         /**
-         * Avancer la couleur d'une étape, jusqu'au rose
+         * Avance la couleur d'une étape, jusqu'au rose
          */
         function nextColorStep() {
           if (colorIndex < colorSteps.length - 1) {
@@ -316,16 +336,13 @@
         }
 
         /**
-         * Lance un fade-in progressif de la musique
-         * partant du volume actuel (0.2) jusqu'à ~1.0
-         * sur ~10s
+         * Fade-in progressif de la musique (de 0.2 à ~9.0 sur ~10s)
          */
         function startMusicFadeIn() {
-          // On stoppe tout fade en cours
+          // Stop eventuel fade en cours
           if (fadeInterval) {
             clearInterval(fadeInterval);
           }
-          // Sur 10s, on incrémente d'environ 0.08 / seconde
           fadeInterval = setInterval(() => {
             const currentVol = musicSoundEl.getAttribute("sound").volume;
             let nextVol = currentVol + 0.08;
@@ -341,7 +358,12 @@
         // Clic sur la batterie
         drumEl.addEventListener("click", () => {
           if (!isSeated) {
-            // PREMIER CLIC => s’asseoir + musique
+            // Masque le panneau d'infos
+            if (infoPanelEl) {
+              infoPanelEl.setAttribute("visible", false);
+            }
+
+            // S'asseoir + lancer musique
             isSeated = true;
 
             playerRigEl.setAttribute("animation__rigpos", {
@@ -360,16 +382,14 @@
             });
             playerRigEl.emit("startMove");
 
-            // Volume initial plus bas
+            // Volume initial
             musicSoundEl.setAttribute("sound", "volume", 0.2);
-            // Lance la musique
             musicSoundEl.components.sound.stopSound();
             musicSoundEl.components.sound.playSound();
 
-            // Fade-in progressif
             startMusicFadeIn();
           } else {
-            // CLICS SUIVANTS => taper sur la batterie
+            // Taper => son + couleur
             playRandomDrumSound();
             nextColorStep();
           }
