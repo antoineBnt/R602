@@ -7,11 +7,8 @@
     <!-- A-Frame principal -->
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 
-    <!-- A-Frame Extras (pour movement-controls, etc.) -->
+    <!-- A-Frame Extras (movement-controls, dragndrop, gamepad, etc.) -->
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.4/dist/aframe-extras.min.js"></script>
-
-    <!-- Plugin pour arrondir les panneaux (rounded-plane) -->
-    <script src="https://unpkg.com/aframe-rounded-plane@1.0.0/dist/aframe-rounded-plane.min.js"></script>
   </head>
   <body>
     <a-scene
@@ -66,6 +63,9 @@
           src="assets/ocean-sound.mp3"
           preload="auto"
         ></audio>
+
+        <!-- Image de panneau arrondi (ou tout autre image) -->
+        <img id="roundedPanel" src="assets/tuto.png" />
       </a-assets>
 
       <!-- 2) OCÉAN AVEC SON -->
@@ -196,13 +196,12 @@
           look-controls="pointerLockEnabled: false"
         ></a-entity>
 
-        <!-- Main gauche (joystick) -->
+        <!-- Main gauche (joystick) avec baguette -->
         <a-entity
           id="leftHand"
           oculus-touch-controls="hand: left"
           gamepad-controls="hand: left"
         >
-          <!-- Baguette gauche -->
           <a-entity
             gltf-model="#baguettesModel"
             position="0 0 -0.3"
@@ -211,7 +210,7 @@
           ></a-entity>
         </a-entity>
 
-        <!-- Main droite (laser + clic) -->
+        <!-- Main droite (laser + clic) avec baguette -->
         <a-entity
           id="rightHand"
           oculus-touch-controls="hand: right"
@@ -220,7 +219,6 @@
           raycaster="objects: .clickable, .draggable; showLine: true"
           line="color: white; opacity: 0.8"
         >
-          <!-- Baguette droite -->
           <a-entity
             gltf-model="#baguettesModel"
             position="0 0 -0.3"
@@ -230,7 +228,7 @@
         </a-entity>
       </a-entity>
 
-      <!-- 6) Ciel (non affecté par le brouillard) -->
+      <!-- 6) Ciel -->
       <a-sky src="assets/sky.jpg" material="fog: false"></a-sky>
 
       <!-- 7) Entités pour jouer les sons -->
@@ -244,23 +242,35 @@
         sound="src: #music; autoplay: false; loop: true; volume: 0.2"
       ></a-entity>
 
-      <!-- (NOUVEAU) 8) Panneau d'information arrondi devant la caméra -->
-      <a-entity
-        id="infoPanel"
-        position="0 1.6 -2"
-        geometry="primitive: rounded-rect; width: 1.2; height: 0.5; borderRadius: 0.1"
-        material="color: #222; opacity: 0.8"
-        visible="true"
-      >
+      <!-- (NOUVEAU) 8) Panneau "loader" qui disparaît après Xs via fondu -->
+      <a-entity id="infoPanel" position="0 2.2 -2" material="opacity: 1">
+        <!-- Plan avec l'image -->
         <a-entity
-          text="
-            value: Bienvenue dans VR Whiplash !\n\nCliquez sur la batterie pour commencer,\npuis frappez-la pour changer la couleur.
-            wrapCount: 26;
-            align: center;
-            color: #EEE;
-          "
-          position="0 0 0.01"
-        ></a-entity>
+          id="panelPlane"
+          geometry="primitive: plane; width: 3; height: 1.8"
+          position="0 0 0"
+          material="src: #roundedPanel; transparent: true; opacity: 1"
+        >
+        </a-entity>
+
+        <!-- Loader stylé : deux anneaux contrarotatifs -->
+        <a-entity position="0 1.3 0.01">
+          <!-- Anneau 1 (blanc) -->
+          <a-entity
+            geometry="primitive: box; width: 0.3; height: 0.3; depth: 0.01"
+            material="color: #fff; shader: flat"
+            position="0 0 0.01"
+            animation="property: rotation; from: 0 0 0; to: 0 0 -360; loop: true; dur: 1500"
+          ></a-entity>
+
+          <!-- Anneau 2 (couleur) qui tourne dans le sens inverse -->
+          <a-entity
+            geometry="primitive: box; width: 0.2; height: 0.2; depth: 0.01"
+            material="color: #ff4081; shader: flat"
+            position="0 0 0.01"
+            animation="property: rotation; from: 0 0 0; to: 0 0 -360; loop: true; dur: 1500"
+          ></a-entity>
+        </a-entity>
       </a-entity>
     </a-scene>
 
@@ -271,10 +281,10 @@
         const playerRigEl = document.getElementById("playerRig");
         const drumSoundEl = document.getElementById("drumSound");
         const musicSoundEl = document.getElementById("musicSound");
+        const infoPanelEl = document.getElementById("infoPanel");
 
         const oceanEl = document.getElementById("ocean");
         const floorEl = document.getElementById("myFloor");
-        const infoPanelEl = document.getElementById("infoPanel");
 
         let isSeated = false;
         let fadeInterval = null;
@@ -287,7 +297,7 @@
           "#sound-cymbale",
         ];
 
-        // Couleurs pour l'océan/le sol, plus d'étapes du bleu au rose
+        // Couleurs bleu -> rose
         const colorSteps = [
           "#182264",
           "#1C2369",
@@ -314,17 +324,16 @@
         let colorIndex = 0;
 
         /**
-         * Jouer un son de batterie aléatoire
+         * Joue un son aléatoire
          */
         function playRandomDrumSound() {
           const randIndex = Math.floor(Math.random() * drumSounds.length);
-          const chosenSrc = drumSounds[randIndex];
-          drumSoundEl.setAttribute("sound", "src", chosenSrc);
+          drumSoundEl.setAttribute("sound", "src", drumSounds[randIndex]);
           drumSoundEl.components.sound.playSound();
         }
 
         /**
-         * Avance la couleur d'une étape, jusqu'au rose
+         * Avance la couleur d'une étape
          */
         function nextColorStep() {
           if (colorIndex < colorSteps.length - 1) {
@@ -336,17 +345,15 @@
         }
 
         /**
-         * Fade-in progressif de la musique (de 0.2 à ~9.0 sur ~10s)
+         * Fade-in progressif de la musique
          */
         function startMusicFadeIn() {
-          // Stop eventuel fade en cours
           if (fadeInterval) {
             clearInterval(fadeInterval);
           }
           fadeInterval = setInterval(() => {
             const currentVol = musicSoundEl.getAttribute("sound").volume;
             let nextVol = currentVol + 0.08;
-
             if (nextVol >= 9.0) {
               nextVol = 9.0;
               clearInterval(fadeInterval);
@@ -355,14 +362,51 @@
           }, 1000);
         }
 
-        // Clic sur la batterie
+        /**
+         * FAIRE DISPARAÎTRE le panneau (opacité 1 -> 0) puis visible=false
+         */
+        function fadeOutPanel() {
+          // Ajoute une animation sur le material.opacity du panel
+          infoPanelEl.setAttribute("animation__fade", {
+            property: "material.opacity",
+            from: 1,
+            to: 0,
+            dur: 800,
+            easing: "easeInOutQuad",
+            startEvents: "fadeNow",
+          });
+          // De même sur le plane (pour être sûr que l'image disparaisse)
+          const panelPlane = document.getElementById("panelPlane");
+          panelPlane.setAttribute("animation__fadeplane", {
+            property: "material.opacity",
+            from: 1,
+            to: 0,
+            dur: 800,
+            easing: "easeInOutQuad",
+            startEvents: "fadeNow",
+          });
+
+          // Quand l'animation est finie => visible=false
+          infoPanelEl.addEventListener(
+            "animationcomplete__fade",
+            () => {
+              infoPanelEl.setAttribute("visible", false);
+            },
+            { once: true }
+          );
+
+          // Déclenche l'animation
+          infoPanelEl.emit("fadeNow");
+        }
+
+        // Au lancement, on attend 3s puis on fadeOut le panneau
+        setTimeout(() => {
+          fadeOutPanel();
+        }, 10000);
+
+        // -- Clic sur la batterie
         drumEl.addEventListener("click", () => {
           if (!isSeated) {
-            // Masque le panneau d'infos
-            if (infoPanelEl) {
-              infoPanelEl.setAttribute("visible", false);
-            }
-
             // S'asseoir + lancer musique
             isSeated = true;
 
@@ -386,10 +430,9 @@
             musicSoundEl.setAttribute("sound", "volume", 0.2);
             musicSoundEl.components.sound.stopSound();
             musicSoundEl.components.sound.playSound();
-
             startMusicFadeIn();
           } else {
-            // Taper => son + couleur
+            // CLICS SUIVANTS => taper sur la batterie
             playRandomDrumSound();
             nextColorStep();
           }
